@@ -2148,6 +2148,8 @@ input, select, textarea {
 		#footer .copyright {
 			list-style: none;
 			padding-left: 0;
+			color: white;
+			background-color: rgba(0,0,0,0.6);
 		}
 
 			#footer .copyright li {

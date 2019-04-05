@@ -13,6 +13,17 @@
 		<link rel="stylesheet" href="assets/css/main.css" />
 		<link rel="stylesheet" href="https://use.fontawesome.com/releases/v5.8.1/css/all.css" integrity="sha384-50oBUHEmvpQ+1lW4y57PTFmhCaXp0ML5d60M1M7uH2+nqUivzIebhndOJK28anvf" crossorigin="anonymous">
 		<noscript><link rel="stylesheet" href="assets/css/noscript.css" /></noscript>
+		<script>
+			function vrmouseover()
+			{
+				document.getElementById("main").style = "background-color:rgba(255,255,255,0.85)";
+			}
+			
+			function vrmouseout()
+			{
+				document.getElementById("main").style = "";
+			}
+		</script>
 	</head>
 	<body class="is-preload">
 
@@ -102,8 +113,8 @@
 									</div>
 								</section>
 							</article>
-						<!-- Work -->
-							<article id="vr" class="panel">
+						<!-- Vr -->
+							<article id="vr" class="panel" onmouseover="vrmouseover()" onmouseout="vrmouseout()">
 								<header>
 									<h2>よんななとVRChat</h2>
 								</header>

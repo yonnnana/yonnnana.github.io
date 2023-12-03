@@ -1,0 +1,225 @@
+@charset "UTF-8";
+/*----------------------------
+  共通
+-----------------------------*/
+
+.h5 {
+    line-height: 1.8rem;
+}
+.border-w3 { 
+    border-left-width: 3px !important;
+    border-left-color: #262626 !important;
+}
+
+/* ====== カラー指定 ====== */
+.brand-color {
+	color: #21386E !important;
+}
+.bg-brand-color {
+	background-color: #21386E !important;
+}
+/* ====== GLOVAL NAV ====== */
+.gloval-nav {
+	height: 10%;
+}
+.navbar-white a {
+	color: #fff;
+}
+/* ====== FOOTER ====== */
+.footer-logo {
+	width: 20%;
+}
+.social img {
+	width: 36px;
+	height: 36px;
+}
+footer {
+	padding-bottom: 5%;
+}
+.time-border {
+   border-top: 3px solid #262626;
+    border-right: 3px solid #262626;
+    margin-left: 24px;
+    padding-bottom: 3rem;
+    padding-right: 5rem;
+    width: 43%;
+}
+/* ====== BREADCRUMB LIST ====== */
+.breadcrumb-list, .breadcrumb-list li {
+	background-color: #21386E;
+}
+/*----------------------------
+  SP TOGGLE NAV
+-----------------------------*/
+.nav-scroller {
+	position: relative;
+	z-index: 2;
+	height: 2.75rem;
+	overflow-y: hidden;
+}
+.nav-scroller .nav {
+	display: -ms-flexbox;
+	display: flex;
+	-ms-flex-wrap: nowrap;
+	flex-wrap: nowrap;
+	padding-bottom: 1rem;
+	margin-top: -1px;
+	overflow-x: auto;
+	color: rgba(255, 255, 255, 0.75);
+	text-align: center;
+	white-space: nowrap;
+	-webkit-overflow-scrolling: touch;
+}
+.nav-underline .nav-link {
+	padding-top: .75rem;
+	padding-bottom: .75rem;
+	font-size: .875rem;
+	color: #6c757d;
+}
+.nav-underline .nav-link:hover {
+	color: #007bff;
+}
+.nav-underline .active {
+	font-weight: 500;
+	color: #343a40;
+}
+
+/*----------------------------
+  TOP ページ
+-----------------------------*/
+/* ====== TOP IMAGE ====== */
+header .jumbotron-fluid {
+	background-image: url(../img/bg-top.jpg);
+	background-size: cover;
+	background-position: center;
+	min-height: 100%;
+}
+header .catch {
+	width: 90%;
+	bottom: 20%;
+	left: 50%;
+	margin-left: -45%;
+}
+header .g-navi {
+	min-height: 100%;
+}
+
+/* ====== PROCESS ====== */
+#sec5 .square {
+	width: 60px;
+	height: 60px;
+	background: #21386E;
+	color: #ffffff;
+	text-align: center;
+	font-size: 2.4rem;
+}
+#sec5 .arrow {
+	width: 60px;
+	height: 40px;
+	border-left: 30px solid transparent;
+	border-right: 30px solid transparent;
+	border-top: 25px solid #333;
+}
+/* --------------------------------------------- */
+#sec6 .circle-q, #sec6 .circle-a {
+	width: 50px;
+	height: 50px;
+	font-size: 2.2rem;
+	border-radius: 50%;
+	text-align: center;
+}
+#sec6 .circle-q {
+	background: #21386E;
+	color: #ffffff;
+	padding-top: 2px;
+}
+#sec6 .circle-a {
+	background: #ffffff;
+	color: #21386E;
+	border: 3px solid #21386E;
+}
+.schedule-img {
+    width: 75%;
+}
+/* ==============================================*/
+/* 中デバイス（タブレット, 992px 未満）
+==============================================*/
+@media screen and (max-width: 991.98px) {
+#glovalNavbar ul li {
+	border-left: none;
+}
+#glovalNavbar ul li:last-child {
+	border-right: none;
+}
+.footer-nav ul li {
+	border-left: none;
+}
+.footer-nav ul li:last-child {
+	border-right: none;
+}
+/* ====== SP TOGGLE NAV ====== */
+.offcanvas-collapse {
+	position: fixed;
+	z-index: 9999;
+	top: 0;
+	/* ナビバーの高さ */
+	bottom: 10%;
+	left: 100%;
+	width: 100%;
+	padding-right: 1rem;
+	padding-left: 1rem;
+	overflow-y: auto;
+	background-color: #fff;
+	transition-timing-function: ease-in-out;
+	transition-duration: .3s;
+	transition-property: left, visibility;
+}
+.offcanvas-collapse.open {
+	left: 0;
+	visibility: visible;
+}
+}
+
+/* END */
+/* 小デバイス（横向きモバイル, 768px 未満）
+==============================================*/
+@media screen and (max-width: 767.98px) {
+.logo {
+	width: 80%;
+}
+.display-3 {
+	font-size: 3rem;
+}
+.footer-logo {
+	width: 80%;
+}
+.navbar-nav .border-left {
+	border-left: none !important;
+}
+.navbar-nav .border-right {
+	border-right: none !important;
+}
+}
+
+/* END */
+/* 極小デバイス（縦向きモバイル, 576px 未満）
+==============================================*/
+@media screen and (max-width: 575.98px) {
+header .catch {
+	bottom: 10%;
+}
+header .catch .h1 {
+	font-size: 2rem;
+}
+header .catch h2 {
+	font-size: 1rem;
+}
+.schedule-img {
+    width: 100%;
+}
+form .border-top,
+    form .border-bottom {
+        border: none !important;
+    }    
+}
+/* END */

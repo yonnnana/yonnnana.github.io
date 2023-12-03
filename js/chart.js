@@ -85,10 +85,10 @@ function drawChart3() {
         ["Element", "Density", {
             role: "style"
         }],
-        ["2019", 0, "silver"],
         ["2020", 0, "silver"],
-        ["2021", 0, "silver"],
-        ["2022", 0, "color: gold"]
+        ["2039", 0, "silver"],
+        ["2047", 0, "silver"],
+        ["3947", 0, "color: gold"]
     ]);
 
     var view = new google.visualization.DataView(data);
@@ -129,10 +129,10 @@ function drawStuff() {
 
     var data = google.visualization.arrayToDataTable([
         ['Year', 'ディレクター', 'マネージャ', '怪文書'],
-        ['2019', 0, 30, 1],
         ['2020', 0, 30, 1],
-        ['2021', 0, 30, 1],
-        ['2022', 0, 30, 1]
+        ['2039', 0, 30, 1],
+        ['2047', 0, 30, 1],
+        ['3947', 0, 30, 1]
     ]);
 
     var classicOptions = {
@@ -157,10 +157,10 @@ function drawStuff() {
 function drawChart4() {
     var data = google.visualization.arrayToDataTable([
         ['Year', 'ディレクター', 'マネージャ', '怪文書'],
-        ['2019', 0, 0, 0],
         ['2020', 0, 0, 0],
-        ['2021', 0, 0, 0],
-        ['2022', 0, 0, 0]
+        ['2039', 0, 0, 0],
+        ['2047', 0, 0, 0],
+        ['3947', 0, 0, 0]
     ]);
 
     var options = {

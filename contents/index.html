@@ -2,7 +2,7 @@
 <html>
   <head prefix="og: http://ogp.me/ns# fb: http://ogp.me/ns/fb# article: http://ogp.me/ns/article#">
     <meta charset="UTF-8">
-    <title>エントリーページ | よんなな屋</title>
+    <title>コンテンツ | よんなな屋</title>
     <meta name="description" content="よんなな屋です">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <link rel="canonical" href="https://yonnnana.github.io">
@@ -54,10 +54,10 @@
 
 <div class="container">
   <h1 class="display-5 text-center pt-5 pb-4 font-weight-bold">コンテンツ</h1>
-	
+	<p mb-0>※iPhone、Androidで楽しめます。PCもカメラがあれば対応しているはずです（未確認）</p>
   <hr>
 
-  <div class="text-center pb-5">
+  <div class="card">
     <model-viewer
       src="./model/ogreblack.glb"
       ios-src="./model/ogreblack.usdz"
@@ -66,11 +66,44 @@
       camera-controls
       ar
     ></model-viewer>
-    <div class="py-3">
-      <p class="mb-0">※　スマホのみ対応しております。iPhoneのみで確認</p>
+    <div class="card-header">
+      <h4 class="card-title">オーガブラックAR</h4>
+    </div>
+    <div class="card-body">
+        <p class="card-text">オーガブラックをARで楽しめます。これでどこでもオーガブラックです</p>
     </div>
   </div>
-</div>
+  <div class="card">
+    <model-viewer
+      src="./model/yonnnana_grave.glb"
+      ios-src="./model/yonnnana_grave.usdz"
+      alt="Orgablack AR"
+      auto-rotate
+      camera-controls
+      ar
+    ></model-viewer>
+    <div class="card-header">
+      <h4 class="card-title">よんななさんの墓AR</h4>
+    </div>
+    <div class="card-body">
+        <p class="card-text">※実寸大です。大きいので広いとこでARしてください。よんななさんの墓をどこでも拝めます</p>
+    </div>
+    <div class="card">
+      <model-viewer
+        src="./model/grave_dentures.glb"
+        ios-src="./model/grave_dentures.usdz"
+        alt="Orgablack AR"
+        auto-rotate
+        camera-controls
+        ar
+      ></model-viewer>
+      <div class="card-header">
+        <h4 class="card-title">墓入れ歯AR</h4>
+      </div>
+      <div class="card-body">
+          <p class="card-text">※実寸大です。かなり大きいので広いとこでARしてください。Vketに参加できない方も墓入れ歯を見ることができます</p>
+      </div>
+  </div>
 <!-------------------------------------------------------------------------------------->     
 </main>
 <!-------------------------------------------------------------------------------------->    

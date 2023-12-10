@@ -137,6 +137,10 @@ const Game = {
 				return;
 			}
 
+			Game.sounds.maingame.volume = 0.1;
+			Game.sounds.maingame.loop = true;
+			Game.sounds.maingame.play();
+			
 			Events.off(mouseConstraint, 'mousedown', menuMouseDown);
 			Game.startGame();
 		}
@@ -146,10 +150,6 @@ const Game = {
 
 	startGame: function () {
 		Game.sounds.click.play();
-
-		Game.sounds.maingame.volume = 0.1;
-		Game.sounds.maingame.loop = true;
-		Game.sounds.maingame.play();
 
 		Composite.remove(engine.world, menuStatics);
 		Composite.add(engine.world, gameStatics);

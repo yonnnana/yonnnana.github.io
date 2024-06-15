@@ -31,13 +31,13 @@
     </div>
 
     <div class="yonnnana_canvas">
-        <canvas id="canvas"></canvas>
+        <img id="canvas"></img>
     </div>
 
     <script>
         function main() {
             var yonnnana_text = document.getElementById("yonnnana_text").value;
-            var canvas = document.getElementById("canvas");
+            const canvas = document.createElement("canvas");
             if (canvas.getContext) {
                 var context = canvas.getContext("2d");
                 var image = new Image();
@@ -67,6 +67,7 @@
                             context.fillText(text[j], x - i * 100, y + j * 50);
                         }
                     }
+                    document.querySelector("#canvas").src = canvas.toDataURL();
                 };
             }
         }

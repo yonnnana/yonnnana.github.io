@@ -1,0 +1,78 @@
+body {
+    font-family: Arial, sans-serif;
+    line-height: 1.6;
+    margin: 0;
+    padding: 0;
+    background-color: #EDECE3; /* より薄い黄色の背景 */
+}
+
+.container {
+    width: 80%;
+    margin: auto;
+    overflow: hidden;
+    padding: 20px;
+}
+
+.item-time {
+    color: rgb(113, 118, 123);
+}
+
+h1 {
+    color: #333;
+    text-align: center;
+}
+
+.search-box {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 20px;
+}
+
+#search-input {
+    width: 70%;
+    padding: 10px;
+    font-size: 16px;
+}
+
+#search-button {
+    padding: 10px 20px;
+    font-size: 16px;
+    background-color: #1565c0; /* 濃い青色のボタン */
+    color: white; /* ボタンのテキスト色を白に */
+    border: none;
+    cursor: pointer;
+}
+
+#search-button:hover {
+    background-color: #0d47a1; /* ホバー時の色をさらに濃い青に */
+}
+
+.result-item {
+    background-color: white;
+    margin-bottom: 10px;
+    padding: 15px;
+    border-radius: 5px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.result-item h2 {
+    margin-top: 0;
+    color: #333;
+}
+
+.result-item p {
+    margin-bottom: 5px;
+}
+
+.tags {
+    margin-top: 10px;
+}
+
+.tag {
+    display: inline-block;
+    background-color: #e0e0e0;
+    padding: 5px 10px;
+    margin-right: 5px;
+    border-radius: 3px;
+    font-size: 14px;
+}

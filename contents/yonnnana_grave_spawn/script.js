@@ -3,7 +3,7 @@ import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 
 let scene, camera, renderer, objects = [];
-const MAX_OBJECTS = 473;
+const MAX_OBJECTS = 47;
 let controls;
 
 function init() {

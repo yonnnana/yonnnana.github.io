@@ -112,6 +112,9 @@
     <textarea id="code" placeholder="コードを入力してください"></textarea>
     <button onclick="runCode()">実行</button>
     <div id="output"></div>
+    <div>
+        <a href="https://twitter.com/share?ref_src=twsrc%5Etfw" id="twitter-share-button-id">実行結果をツイート！</a>
+    </div>
 
     <script>
         function runCode() {
@@ -159,6 +162,20 @@
             }
 
             output.textContent = result;
+
+            // twitterボタン作成
+            var twitterButton = document.querySelector('#twitter-share-button-id');
+
+            var codeText = encodeURIComponent(encodeURIComponent(document.getElementById('code').value));
+            var resultText = document.getElementById('output').textContent;
+
+            // 設定したい値
+            var textToShare = `実行結果:${resultText}`;
+            var urlToShare = `https://yonnnana.github.io/contents/chinpoko_programming_language?code=${codeText}`;
+            
+            var shareUrl = `https://twitter.com/intent/tweet?text=${textToShare}&url=${urlToShare}`;
+
+            twitterButton.setAttribute("href", shareUrl);
         }
 
         // spanタグをクリックしたときの処理
@@ -166,6 +183,29 @@
             const exampleText = this.textContent.trim(); // span内のテキストを取得
             document.getElementById('code').value = exampleText; // textareaに設定
         });
+
+        // ページ読み込み完了時に実行
+        window.addEventListener('DOMContentLoaded', (event) => {
+            // URLからパラメータを取得する関数
+            function getParameterByName(name, url = window.location.href) {
+                name = name.replace(/[\[\]]/g, '\\$&');
+                var regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)'),
+                    results = regex.exec(url);
+                if (!results) return null;
+                if (!results[2]) return '';
+                return decodeURIComponent(results[2].replace(/\+/g, ' '));
+            }
+
+            // 'code'パラメータを取得
+            var codeParam = getParameterByName('code');
+            
+            // パラメータが存在する場合、HTMLデコードしてからテキストエリアにセット
+            if (codeParam) {
+                var decodedCode = decodeURIComponent(codeParam);
+                document.getElementById('code').value = decodedCode;
+            }
+        });
     </script>
+    <script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
 </body>
 </html>

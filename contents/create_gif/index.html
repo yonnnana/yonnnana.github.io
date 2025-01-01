@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GIF動画生成</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1>GIF動画生成(おみくじもつけれるよ)</h1>
+        <input type="file" id="imageUpload" accept="image/*" multiple>
+        <div id="preview"></div>
+        <div id="imageTextInputs"></div>
+        <div class="input-group">
+            <label for="delayInput">フレーム間の遅延時間 (ミリ秒):</label>
+            <input type="number" id="delayInput" value="100" min="10" max="1000">
+        </div>
+        <div class="input-group">
+            <label for="widthInput">幅 (ピクセル):</label>
+            <input type="number" id="widthInput" value="480" min="50" max="800">
+        </div>
+        <div class="input-group">
+            <label for="heightInput">高さ (ピクセル):</label>
+            <input type="number" id="heightInput" value="640" min="50" max="800">
+        </div>
+
+        <div class="checkbox-group">
+            <input type="checkbox" id="random_mikuji" name="おみくじ完全ランダム作成">
+            <label for="random_mikuji">おみくじを完全ランダムに作成</label>
+        </div>
+        <div class="checkbox-group">
+            <input type="checkbox" id="renketsu_gif" name="文字なし連結">
+            <label for="renketsu_gif">おみくじいらない連結だけ</label>
+        </div>
+        <button id="createGif">GIFを作成</button>
+        <canvas id="canvas" style="display:none;"></canvas>
+        <img id="resultGif" alt="生成されたGIF">
+    </div>
+    <script src="LZWEncoder.js"></script>
+    <script src="NeuQuant.js"></script>
+    <script src="GIFEncoder.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>

@@ -1,0 +1,36 @@
+body {
+    background-color: #000; /* 背景を黒に */
+    color: #fff; /* 文字色を白に */
+    text-align: center; /* 文字を中央揃え */
+    overflow: hidden; /* 花火が画面外に出ないように */
+    margin: 0; /* 余白をなくす */
+    height: 100vh; /* 画面いっぱいに表示 */
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+
+#fireworks-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+  }
+  .firework {
+    position: absolute;
+  }
+  .particle {
+    position: absolute;
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+  }
+  
+
+h1 {
+    font-size: 3em; /* 文字サイズを大きく */
+    z-index: 1; /* 花火より前面に表示 */
+}

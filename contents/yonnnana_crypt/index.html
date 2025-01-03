@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>4739暗号</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="container">
+    <h1>4739暗号</h1>
+    <div class="input-group">
+      <textarea id="encrypt-text" rows="5" placeholder="暗号化するテキストを入力してください"></textarea>
+    </div>
+    <div class="button-group">
+      <button onclick="handleEncrypt()">暗号化↓</button>
+      <button onclick="handleDecrypt()">↑解読</button>
+    </div>
+    <div class="output-group">
+      <textarea id="decrypt-text" rows="5" placeholder="解読するテキストを入力してください"></textarea>
+    </div>
+  </div>
+  <script src="script.js"></script>
+</body>
+</html>

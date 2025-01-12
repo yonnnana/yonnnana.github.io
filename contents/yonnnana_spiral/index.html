@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>アルキメデスの螺旋</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+    </style>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/p5.js/1.4.0/p5.min.js"></script>
+</head>
+<body>
+    <script>
+        let pointImage;
+        let a = 10; // スケール因子
+        let turns = 10; // 螺旋の周回数
+        let theta = 0;
+        let last_theta;
+        let max_width = 168;
+        let max_height = 202;
+        let isComplete = false;
+        let spiral_image;
+
+        function preload() {
+            pointImage = loadImage('point.png'); // point.pngの画像パスを指定
+        }
+
+        function setup() {
+            createCanvas(1500, 1500);
+            imageMode(CENTER);
+            last_theta = turns * TWO_PI;
+        }
+
+        function draw() {
+            if (isComplete) {
+                background(240);
+                push();
+                translate(width / 2, height / 2);
+                rotate(theta);
+                theta -= 0.05;
+                image(spiral_image, 0, 0);
+                pop();
+                return;
+            }
+
+            background(240);
+            translate(width / 2, height / 2); // 中心に移動
+
+            for (let t = 0; t <= theta; t += 0.25) {
+                let r = a * t; // アルキメデスの螺旋の方程式
+                let x = -r * cos(t);
+                let y = r * sin(t);
+
+                let w = map(t, 0, last_theta, 5, max_width);
+                let h = map(t, 0, last_theta, 5, max_height);
+                w = constrain(w, 5, max_width);
+                h = constrain(h, 5, max_height);
+
+                push();
+                translate(x, y);
+                rotate(t);
+                image(pointImage, 0, 0, w, h);
+                pop();
+            }
+
+            theta += 0.05; // 螺旋の成長速度
+            if (theta > last_theta) {
+                theta = 0;
+                spiral_image = get(0,0,1500,1500);
+                isComplete = true; // 描画完了
+            }
+        }
+
+    </script>
+</body>
+</html>

@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
     <meta charset="UTF-8">
-    <title>グレー領域を自動拡大するマンデルブロ集合</title>
+    <title>よんななさんマンデルブロ集合</title>
     <style>
         canvas {
             border: 1px solid black;
@@ -11,7 +11,7 @@
     </style>
 </head>
 <body>
-    <canvas id="mandelbrotCanvas" width="720" height="720"></canvas>
+    <canvas id="mandelbrotCanvas" width="720" height="1280"></canvas>
     <script>
         const canvas = document.getElementById('mandelbrotCanvas');
         const ctx = canvas.getContext('2d');
@@ -23,6 +23,8 @@
         const maxIterations = 1000;
         const pointImage = new Image();
         pointImage.src = 'point.png';
+        let image_width = 24;
+        let image_height = 30;
 
         function mandelbrot(x, y) {
             let zx = 0;
@@ -51,7 +53,7 @@
                     if (iteration < maxIterations) {
                         const intensity = Math.sqrt(iteration / maxIterations);
                         ctx.globalAlpha = intensity;
-                        ctx.drawImage(pointImage, px, py, 24, 30);
+                        ctx.drawImage(pointImage, px, py, image_width, image_height);
                     }
                 }
             }

@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>グレー領域を自動拡大するマンデルブロ集合</title>
+    <style>
+        canvas {
+            border: 1px solid black;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="mandelbrotCanvas" width="720" height="720"></canvas>
+    <script>
+        const canvas = document.getElementById('mandelbrotCanvas');
+        const ctx = canvas.getContext('2d');
+
+        let xMin = -2;
+        let xMax = 1;
+        let yMin = -1;
+        let yMax = 1;
+        const maxIterations = 1000;
+        const pointImage = new Image();
+        pointImage.src = 'point.png';
+
+        function mandelbrot(x, y) {
+            let zx = 0;
+            let zy = 0;
+            let iteration = 0;
+            while (zx * zx + zy * zy < 4 && iteration < maxIterations) {
+                const temp = zx * zx - zy * zy + x;
+                zy = 2 * zx * zy + y;
+                zx = temp;
+                iteration++;
+            }
+            return iteration;
+        }
+
+        function drawMandelbrot() {
+            const width = canvas.width;
+            const height = canvas.height;
+            
+            ctx.clearRect(0, 0, width, height);
+
+            for (let px = 0; px < width; px++) {
+                for (let py = 0; py < height; py++) {
+                    const x = xMin + (px / width) * (xMax - xMin);
+                    const y = yMin + (py / height) * (yMax - yMin);
+                    const iteration = mandelbrot(x, y);
+                    if (iteration < maxIterations) {
+                        const intensity = Math.sqrt(iteration / maxIterations);
+                        ctx.globalAlpha = intensity;
+                        ctx.drawImage(pointImage, px, py, 24, 30);
+                    }
+                }
+            }
+        }
+
+        // function detectGrayArea(imageData, width, height) {
+        //     let maxDensity = 10;
+        //     let zoomCenterX = 0;
+        //     let zoomCenterY = 0;
+        //     const blockSize = 20; // グレー領域を探す領域のサイズ
+
+        //     for (let x = 0; x < width - blockSize; x += blockSize) {
+        //         for (let y = 0; y < height - blockSize; y += blockSize) {
+        //             let grayCount = 0;
+        //             for (let i = 0; i < blockSize; i++) {
+        //                 for (let j = 0; j < blockSize; j++) {
+        //                     const index = ((y + j) * width + (x + i)) * 4;
+        //                     if (imageData.data[index] > 0 && imageData.data[index] < 128) {
+        //                         grayCount++;
+        //                     }
+        //                 }
+        //             }
+        //             const density = grayCount / (blockSize * blockSize);
+        //             if (density > maxDensity) {
+        //                 maxDensity = density;
+        //                 zoomCenterX = x + blockSize / 2;
+        //                 zoomCenterY = y + blockSize / 2;
+        //             }
+        //         }
+        //     }
+
+        //     return { x: zoomCenterX, y: zoomCenterY };
+        // }
+
+        // function autoZoom() {
+        //     const imageData = drawMandelbrot();
+        //     const { x, y } = detectGrayArea(imageData, canvas.width, canvas.height);
+
+        //     const zoomFactor = 0.95;
+        //     const newWidth = (xMax - xMin) * zoomFactor;
+        //     const newHeight = (yMax - yMin) * zoomFactor;
+
+        //     const zoomCenterX = xMin + (x / canvas.width) * (xMax - xMin);
+        //     const zoomCenterY = yMin + (y / canvas.height) * (yMax - yMin);
+
+        //     xMin = zoomCenterX / 2  - newWidth / 2;
+        //     xMax = zoomCenterX / 2  + newWidth / 2;
+        //     yMin = zoomCenterY / 2  - newHeight / 2;
+        //     yMax = zoomCenterY / 2  + newHeight / 2;
+
+        //     setTimeout(autoZoom, 100); // 100ミリ秒ごとにズーム
+        // }
+
+        // クリックによる拡大処理（コメントアウト）
+        canvas.addEventListener('click', function(event) {
+            const rect = canvas.getBoundingClientRect();
+            const mouseX = event.clientX - rect.left;
+            const mouseY = event.clientY - rect.top;
+
+            const clickedX = xMin + (mouseX / canvas.width) * (xMax - xMin);
+            const clickedY = yMin + (mouseY / canvas.height) * (yMax - yMin);
+
+            const zoomFactor = 0.4;
+            const newWidth = (xMax - xMin) * zoomFactor;
+            const newHeight = (yMax - yMin) * zoomFactor;
+
+            xMin = clickedX - newWidth / 2;
+            xMax = clickedX + newWidth / 2;
+            yMin = clickedY - newHeight / 2;
+            yMax = clickedY + newHeight / 2;
+
+            drawMandelbrot();
+        });
+
+        // 初期描画後に自動ズームを開始
+        pointImage.onload = function() {
+            drawMandelbrot();
+        };
+        // setTimeout(autoZoom, 100);
+    </script>
+</body>
+</html>

@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>Yonnnana Plus</title>
+  <style>
+    /* ページ全体のスタイル */
+    body {
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(135deg, #2c3e50, #4ca1af);
+      font-family: 'Helvetica', sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      color: #fff;
+    }
+    /* コンテナ内は中央揃え */
+    .container {
+      text-align: center;
+    }
+    /* タイトルのスタイル */
+    h1 {
+      font-size: 3em;
+      margin-bottom: 20px;
+      text-shadow: 0 0 10px rgba(255, 255, 255, 0.8);
+    }
+    /* 認証するボタンのスタイル */
+    button {
+      padding: 15px 30px;
+      font-size: 1.2em;
+      border: none;
+      border-radius: 50px;
+      background: rgba(255, 255, 255, 0.3);
+      color: #fff;
+      cursor: pointer;
+      transition: background 0.3s, transform 0.3s;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+    }
+    button:hover {
+      background: rgba(255, 255, 255, 0.5);
+      transform: scale(1.05);
+    }
+    button:active {
+      transform: scale(0.95);
+    }
+    /* 認証完了メッセージのスタイル */
+    .message {
+      margin-top: 20px;
+      font-size: 2.5em;
+      opacity: 0;
+    }
+    /* 派手な認証完了アニメーション */
+    .message.show {
+      animation: flashy 1.2s forwards;
+    }
+    @keyframes flashy {
+      0% {
+        opacity: 0;
+        transform: scale(0) rotate(0deg);
+        text-shadow: none;
+      }
+      25% {
+        opacity: 1;
+        transform: scale(1.5) rotate(10deg);
+        text-shadow: 0 0 8px #ffeb3b, 0 0 12px #ff5722;
+      }
+      50% {
+        transform: scale(1.2) rotate(-10deg);
+        text-shadow: 0 0 12px #8bc34a, 0 0 16px #cddc39;
+      }
+      75% {
+        transform: scale(1.4) rotate(10deg);
+        text-shadow: 0 0 16px #00bcd4, 0 0 20px #2196f3;
+      }
+      100% {
+        opacity: 1;
+        transform: scale(1) rotate(0deg);
+        text-shadow: 0 0 8px #ffeb3b, 0 0 12px #ff5722;
+      }
+    }
+    /* Twitter共有ボタンのスタイル */
+    .twitter {
+      margin-top: 20px;
+      padding: 15px 30px;
+      font-size: 1.2em;
+      border: none;
+      border-radius: 50px;
+      background: #1DA1F2;
+      color: #fff;
+      cursor: pointer;
+      box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+      opacity: 0;
+      transform: translateY(20px);
+      transition: opacity 0.8s ease, transform 0.8s ease;
+    }
+    .twitter:hover {
+      transform: translateY(-2px);
+    }
+    .twitter.show {
+      opacity: 0;
+      transform: translateY(0);
+      animation: late-open 0.5s ease-in 1s forwards;
+    }
+    /* late-open = display: block; */
+    @keyframes late-open {
+      to {
+        opacity: 1;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- タイトルをボタンの上に配置 -->
+    <h1>Yonnnana Plus</h1>
+    <button id="authButton">認証する</button>
+    <div id="authMessage" class="message">認証完了！</div>
+    <!-- Twitter共有ボタン。クリック時に新しいウィンドウでTwitterのツイート画面を開きます -->
+    <button id="twitterShareButton" class="twitter" onclick="window.open('https://twitter.com/intent/tweet?text=認証されました&url=https://yonnnana.github.io/contents/yonnnana_plus/authentication.html', '_blank')">認証結果をツイート！</button>
+  </div>
+  <script>
+    const authButton = document.getElementById("authButton");
+    const authMessage = document.getElementById("authMessage");
+    const twitterShareButton = document.getElementById("twitterShareButton");
+
+    authButton.addEventListener("click", () => {
+      // 認証完了メッセージに派手なアニメーションを適用
+      authMessage.classList.add("show");
+      // 認証完了後にTwitterボタンをふわっと表示
+      twitterShareButton.classList.add("show");
+      // 認証するボタンを無効化して再クリックを防止
+      authButton.disabled = true;
+      authButton.style.opacity = "0.6";
+    });
+  </script>
+</body>
+</html>

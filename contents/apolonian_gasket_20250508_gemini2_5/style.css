@@ -1,34 +1,45 @@
 body {
     margin: 0;
     display: flex;
-    flex-direction: column; /* Canvasとコントロールを縦に並べる */
+    flex-direction: column;
     justify-content: center;
     align-items: center;
     min-height: 100vh;
     background-color: #f0f0f0;
+    overflow: hidden; /* スクロールバーが出ないように */
 }
 
 canvas {
     border: 1px solid black;
     background-color: transparent;
+    /* 最大幅/高さを設定し、アスペクト比を保つようにする例 */
+    max-width: 95vw; /* ビューポート幅の95% */
+    max-height: 80vh; /* ビューポート高さの80% (コントロールの高さを考慮) */
+    /* JavaScriptで幅と高さを設定するため、ここでは具体的なwidth/heightは指定しないか、初期値としておく */
 }
 
 .controls {
-    margin-top: 20px; /* Canvasとの間隔 */
+    margin-top: 15px;
+    padding: 10px; /* パディングを追加して見やすく */
     display: flex;
+    flex-wrap: wrap; /* 小画面で折り返すように */
+    justify-content: center; /* 中央寄せ */
     align-items: center;
+    gap: 10px; /* 要素間の隙間 */
+    width: 90%; /* コントロールエリアの幅 */
+    max-width: 600px; /* コントロールエリアの最大幅 */
 }
 
-.controls label {
-    margin-right: 10px;
-}
+
 
 .controls input[type="range"] {
-    width: 200px; /* スライダーの幅 */
+    width: 150px; /* 基本幅 */
+    flex-grow: 1; /* 利用可能なスペースに応じて伸びる */
+    max-width: 300px; /* 最大幅 */
 }
 
 .controls span {
-    margin-left: 10px;
-    min-width: 40px; /* 値表示エリアの幅を確保 */
+    /* margin-left: 10px; */ /* gapで代替 */
+    min-width: 40px;
     text-align: left;
 }

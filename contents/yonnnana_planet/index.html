@@ -1,0 +1,22 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>シンプルな太陽系シミュレーション</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <canvas id="solarSystemCanvas"></canvas>
+
+    <!-- 速度調整用のUI要素を追加 -->
+    <div class="controls">
+        <label for="speedControl">公転速度:</label>
+        <input type="range" id="speedControl" min="10" max="100000" value="10000"> <!-- 最小値10%, 最大値200% -->
+        <span id="currentSpeed">100%</span>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

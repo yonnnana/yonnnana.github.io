@@ -1,0 +1,42 @@
+body {
+    margin: 0;
+    overflow: hidden; /* スクロールバーを表示しない */
+    background-color: #00001a; /* 宇宙空間のような暗い背景 */
+    color: #ffffff; /* UI要素の文字色を白に */
+    font-family: sans-serif; /* フォントを設定 */
+}
+
+canvas {
+    display: block; /* 余白をなくす */
+    /* canvasのサイズはJavaScriptで設定するため、ここでは基本的なスタイルのみ */
+}
+
+/* 速度調整UIのコンテナ */
+.controls {
+    position: fixed; /* 画面上の固定位置に配置 */
+    bottom: 10px; /* 下から10px */
+    left: 50%; /* 左端から50% */
+    transform: translateX(-50%); /* 要素の中心が左端50%に来るように調整 */
+    background-color: rgba(0, 0, 0, 0.5); /* 半透明の背景 */
+    padding: 10px 15px;
+    border-radius: 5px;
+    z-index: 10; /* canvasより手前に表示 */
+    display: flex; /* 要素を横に並べる */
+    align-items: center; /* 垂直方向中央揃え */
+    gap: 10px; /* 要素間のスペース */
+}
+
+.controls label {
+    white-space: nowrap; /* ラベルが折り返されないように */
+}
+
+.controls input[type="range"] {
+    flex-grow: 1; /* スライダーが利用可能なスペースを埋めるように拡張 */
+    width: 200px; /* デフォルトの幅 */
+    cursor: pointer;
+}
+
+.controls #currentSpeed {
+    min-width: 50px; /* 表示がブレないように最小幅を設定 */
+    text-align: right; /* 右寄せ */
+}

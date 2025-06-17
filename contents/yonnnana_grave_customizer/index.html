@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>墓作成サービス</title>
+
+    <!-- CDNのスクリプトタグは全て削除 -->
+    <!-- importmap タグも削除 -->
+
+  <script type="module" crossorigin src="./assets/index-CWeYejzq.js"></script>
+  <link rel="stylesheet" crossorigin href="./assets/index-Dyn43lf2.css">
+</head>
+<body>
+    <h1>墓作成サービス</h1>
+
+    <div id="controls">
+        <div class="control-group">
+            <label for="baseTextureUpload">ベーステクスチャ画像を変更:</label>
+            <input type="file" id="baseTextureUpload" accept="image/*">
+            <button id="resetBaseTextureButton">デフォルトに戻す</button>
+            <button id="setPreparedBaseTextureButton">文字なしテクスチャに設定</button>
+            <p class="note">※モデルのベーステクスチャ画像全体を新しい画像に置き換えます。4Kサイズ推奨。</p>
+        </div>
+
+        <div class="control-group">
+            <label for="imageOverwriteUpload">遺影画像をアップロード:</label>
+            <input type="file" id="imageOverwriteUpload" accept="image/*">
+            <p class="note">※アップロードされた画像は、遺影にされます。</p>
+        </div>
+
+        <div class="control-group">
+            <label for="textOverwrite">墓文字上書き用テキスト:</label>
+            <input type="text" id="textOverwrite" placeholder="ここに入力">
+             <label for="textColor" class="inline-label">文字色:</label>
+            <input type="text" id="textColor" value="黒" placeholder="例: 黒, 255,0,0, #FF0000">
+            <button id="applyReverseTextOverwrite">文字反映</button>
+            <p class="note">※入力された文字を、墓文字に反映します。</p>
+        </div>
+
+        <div class="control-group">
+            <button id="downloadModel">GLBとしてダウンロード</button>
+        </div>
+    </div>
+
+    <div id="preview">
+        <!-- Three.jsのCanvasがここに追加されます -->
+    </div>
+
+    <div id="status">準備完了</div>
+
+    <!-- script.js をモジュールとして読み込む -->
+</body>
+</html>

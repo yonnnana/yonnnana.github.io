@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QRコードジェネレーター (ロゴ入り)</title>
+    <link rel="stylesheet" href="style.css">
+    <!-- qrcode.js ライブラリを読み込み -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.1/build/qrcode.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>QRコードジェネレーター</h1>
+
+        <div class="controls">
+            <div class="input-group">
+                <label for="qrData">QRコードのデータ (URL/テキスト):</label>
+                <textarea id="qrData" rows="5" placeholder="例: https://example.com または QRコードにしたいテキスト"></textarea>
+            </div>
+
+            <!-- ここにあったロゴ画像選択のUIを削除 -->
+            <!--
+            <div class="input-group">
+                <label for="logoImage">中央のロゴ画像 (PNG/JPG):</label>
+                <input type="file" id="logoImage" accept="image/png, image/jpeg">
+                <small>ロゴはQRコード全体の約20%程度のサイズが推奨されます。</small>
+            </div>
+            -->
+            <p><small>ロゴファイル (<code>logo.png</code>) が自動的に中央に埋め込まれます。</small></p>
+
+
+            <div class="input-group">
+                <label for="errorCorrection">エラー訂正レベル (ロゴ用は 'H' 推奨):</label>
+                <select id="errorCorrection">
+                    <option value="L">低 (L)</option>
+                    <option value="M">中 (M)</option>
+                    <option value="Q">やや高 (Q)</option>
+                    <option value="H" selected>高 (H) - ロゴ向き</option>
+                </select>
+                <small>レベルが高いほどロゴを埋め込んでも読み取りやすくなりますが、QRコードが複雑になります。</small>
+            </div>
+
+            <div class="input-group">
+                <label for="qrSize">QRコードのサイズ (ピクセル):</label>
+                <input type="number" id="qrSize" value="300" min="100" max="1000">
+            </div>
+
+            <button id="generateButton">QRコードを生成</button>
+        </div>
+
+        <div class="output">
+            <h2>生成されたQRコード</h2>
+            <canvas id="qrCanvas"></canvas>
+            <button id="downloadButton">ダウンロード</button>
+            <p id="message" class="hidden"></p>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

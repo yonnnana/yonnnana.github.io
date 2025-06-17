@@ -1,0 +1,128 @@
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f4f7f6;
+    margin: 0;
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    min-height: 100vh;
+    box-sizing: border-box;
+}
+
+.container {
+    background-color: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+    padding: 30px;
+    max-width: 700px;
+    width: 100%;
+    text-align: center;
+    margin-top: 30px;
+}
+
+h1 {
+    color: #333;
+    margin-bottom: 30px;
+    font-size: 2em;
+    border-bottom: 2px solid #007bff;
+    padding-bottom: 10px;
+    display: inline-block;
+}
+
+.controls, .output {
+    margin-bottom: 30px;
+    padding: 20px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    background-color: #fdfdfd;
+}
+
+.input-group {
+    margin-bottom: 20px;
+    text-align: left;
+}
+
+.input-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: bold;
+    color: #555;
+}
+
+.input-group textarea,
+.input-group input[type="file"],
+.input-group select,
+.input-group input[type="number"] {
+    width: calc(100% - 20px);
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    font-size: 1em;
+    box-sizing: border-box;
+    margin-top: 5px;
+}
+
+.input-group input[type="file"] {
+    padding: 8px;
+}
+
+.input-group small {
+    display: block;
+    margin-top: 5px;
+    color: #888;
+    font-size: 0.85em;
+}
+
+button {
+    background-color: #007bff;
+    color: white;
+    padding: 12px 25px;
+    border: none;
+    border-radius: 6px;
+    font-size: 1.1em;
+    cursor: pointer;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    margin-top: 10px;
+    min-width: 150px;
+}
+
+button:hover {
+    background-color: #0056b3;
+    transform: translateY(-2px);
+}
+
+button#downloadButton {
+    background-color: #28a745;
+    margin-left: 10px;
+}
+
+button#downloadButton:hover {
+    background-color: #218838;
+}
+
+#qrCanvas {
+    display: block;
+    margin: 20px auto;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    max-width: 100%;
+    height: auto; /* Ensure canvas scales */
+}
+
+.output h2 {
+    color: #333;
+    margin-bottom: 20px;
+    font-size: 1.6em;
+}
+
+#message {
+    margin-top: 20px;
+    font-size: 1em;
+    color: #d9534f;
+    font-weight: bold;
+}
+
+.hidden {
+    display: none;
+}

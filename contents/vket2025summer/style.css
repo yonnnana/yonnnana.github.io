@@ -1,0 +1,160 @@
+/* ▼▼▼ 冒頭に追加 ▼▼▼ */
+/* Google Fontsをインポートする（HTMLで読み込む方法を推奨しますが、こちらも可） */
+/* @import url('https://fonts.googleapis.com/css2?family=Kaisei+Tokumin:wght@800&display=swap'); */
+/* ▲▲▲ ここまで追加 ▲▲▲ */
+
+/* 全体のスタイル */
+body {
+    margin: 0;
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    background: linear-gradient(135deg, #fceabb 0%, #f8b500 100%);
+    color: #333;
+    height: 100vh;
+    overflow: hidden;
+}
+
+/* メインコンテンツのコンテナ */
+.main-content {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between; 
+    align-items: center;
+    text-align: center;
+    height: 100vh;
+    position: relative;
+    box-sizing: border-box;
+    padding: 5vh 0;
+}
+
+/* ▼▼▼ タイトルのスタイルを追加 ▼▼▼ */
+.main-title {
+    font-family: 'Kaisei Tokumin', serif;
+    font-weight: 800;
+    font-size: clamp(2.5rem, 8vw, 6rem);
+    margin: 0 0 20px 0;
+    background: linear-gradient(45deg, #fff, #ffd700, #f8b500, #fff, #ffd700);
+    background-size: 200% auto;
+    color: transparent;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-stroke: 1px #a16c00;
+    animation: shine 4s linear infinite;
+}
+@keyframes shine {
+    to { background-position: -200% center; }
+}
+
+
+/* 大仏のコンテナと画像スタイル */
+.daibutsu-container {
+    width: 100%; /* 幅を広げて3体配置できるようにする */
+    height: 50vh;
+    display: flex;
+    /* 3体を中央揃えで均等に配置 */
+    justify-content: center; 
+    align-items: flex-end;
+    gap: 2%; /* 大仏同士の間隔 */
+    z-index: 1;
+}
+
+/* 以前の#daibutsuをクラスセレクタに変更 */
+.daibutsu {
+    position: relative; /* z-indexを有効にするため */
+    max-height: 100%;
+    width: auto;
+    max-width: 30%; /* 3体並んでもはみ出ないように */
+    transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+    transform-origin: bottom center;
+}
+
+/* 左右の大仏 (1番目と3番目) */
+.daibutsu:nth-child(1),
+.daibutsu:nth-child(3) {
+    z-index: 1;
+    /* 立体感を出すために少し小さくしておく（任意） */
+    transform: scale(0.9); 
+}
+
+/* 真ん中の大仏 (2番目) */
+.daibutsu:nth-child(2) {
+    z-index: 2; /* 最前面に表示 */
+    /* 左右より少し大きくしておく（任意） */
+    transform: scale(1.0);
+    max-height: 105%; /* 少しだけ大きく見せる */
+}
+
+/* ▲▲▲ ここまで修正 ▲▲▲ */
+
+
+/* 操作パネル */
+.controls {
+    padding: 20px;
+    position: relative;
+    z-index: 10;
+    /* ▼▼▼ 追加 ▼▼▼ */
+    /* タイトルとボタンを縦に並べる */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+/* 投資ボタンのスタイル */
+#invest-button {
+    padding: 15px 35px;
+    font-size: 1.5em;
+    font-weight: bold;
+    color: white;
+    background: linear-gradient(45deg, #ff6b6b, #feca57);
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+    transition: transform 0.1s ease, box-shadow 0.1s ease;
+}
+
+#invest-button:active {
+    transform: translateY(4px) scale(0.98);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+}
+
+
+/* --- コインのエフェクト --- */
+
+/* エフェクト用のコンテナ */
+#effect-container {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 5;
+}
+
+/* コインの基本スタイル */
+.coin {
+    position: absolute;
+    width: 35px;
+    height: 35px;
+    background-image: url('coin.png');
+    background-size: contain;
+    background-repeat: no-repeat;
+    animation: spray-and-fall linear forwards;
+    opacity: 0;
+}
+
+/* コインが飛び散るアニメーション */
+@keyframes spray-and-fall {
+    0% {
+        transform: translateY(0) rotate(0deg);
+        opacity: 1;
+    }
+    30% {
+        opacity: 1;
+    }
+    100% {
+        transform: translateY(var(--fall-y)) rotate(var(--rotate-z));
+        opacity: 0;
+    }
+}

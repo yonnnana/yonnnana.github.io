@@ -1,0 +1,267 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Layer Canvas - 簡易画像編集ツール</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <div class="app">
+      <header class="topbar">
+        <div class="brand">
+          <span class="brand-mark" aria-hidden="true"></span>
+          <div>
+            <h1>Layer Canvas</h1>
+            <p>画像編集とレイヤー合成</p>
+          </div>
+        </div>
+
+        <div class="top-actions" aria-label="ファイル操作">
+          <input id="fileInput" type="file" accept="image/*" multiple hidden>
+          <input id="projectFileInput" type="file" accept=".lcanvas,application/octet-stream" hidden>
+          <button class="button" id="newCanvasButton" type="button">新規作成</button>
+          <button class="button" id="openProjectButton" type="button">プロジェクトを開く</button>
+          <button class="button" id="saveProjectButton" type="button">プロジェクト保存</button>
+          <button class="button primary" id="addImageButton" type="button">画像を追加</button>
+          <button class="button" id="undoButton" type="button" disabled>戻す</button>
+          <button class="button" id="redoButton" type="button" disabled>進む</button>
+          <button class="button" data-export="image/png" type="button">PNG保存</button>
+          <button class="button" data-export="image/jpeg" type="button">JPEG保存</button>
+        </div>
+
+        <div class="mobile-panel-tabs" aria-label="スマホ用パネル">
+          <button class="button compact mobile-panel-button" data-mobile-panel="layers" type="button">レイヤー</button>
+          <button class="button compact mobile-panel-button" data-mobile-panel="properties" type="button">調整</button>
+          <button class="button compact mobile-panel-button" data-mobile-panel="closed" type="button">閉じる</button>
+        </div>
+      </header>
+
+      <main class="workspace">
+        <nav class="tool-rail" aria-label="編集ツール">
+          <button class="tool-button active" data-tool="select" type="button" title="選択と移動">
+            <span aria-hidden="true">MOVE</span>
+            <small>選択</small>
+          </button>
+          <button class="tool-button" data-tool="crop" type="button" title="トリミング">
+            <span aria-hidden="true">CROP</span>
+            <small>切抜</small>
+          </button>
+          <button class="tool-button" data-tool="brush" type="button" title="ブラシ">
+            <span aria-hidden="true">PEN</span>
+            <small>筆</small>
+          </button>
+          <button class="tool-button" data-tool="eraser" type="button" title="消しゴム">
+            <span aria-hidden="true">ERASE</span>
+            <small>消</small>
+          </button>
+          <button class="tool-button" id="addTextButton" type="button" title="テキストを追加">
+            <span aria-hidden="true">TEXT</span>
+            <small>文字</small>
+          </button>
+          <button class="tool-button" id="addRectButton" type="button" title="四角形を追加">
+            <span aria-hidden="true">RECT</span>
+            <small>四角</small>
+          </button>
+          <button class="tool-button" id="addEllipseButton" type="button" title="円を追加">
+            <span aria-hidden="true">OVAL</span>
+            <small>円</small>
+          </button>
+        </nav>
+
+        <section class="stage-panel" aria-label="編集キャンバス">
+          <div class="canvas-toolbar">
+            <label>
+              幅
+              <input id="canvasWidth" type="number" min="64" max="8000" step="1" value="1280">
+            </label>
+            <label>
+              高さ
+              <input id="canvasHeight" type="number" min="64" max="8000" step="1" value="720">
+            </label>
+            <button class="button compact" id="applyCanvasSize" type="button">サイズ適用</button>
+            <button class="button compact" id="fitViewButton" type="button">表示調整</button>
+            <div class="brush-controls" aria-label="ブラシ設定">
+              <label>
+                色
+                <input id="brushColor" type="color" value="#111827">
+              </label>
+              <label>
+                太さ
+                <input id="brushSize" type="range" min="2" max="96" value="26">
+              </label>
+            </div>
+          </div>
+
+          <div id="dropZone" class="canvas-shell">
+            <canvas id="editorCanvas" width="1280" height="720" aria-label="画像編集キャンバス"></canvas>
+          </div>
+
+          <div class="crop-actions" id="cropActions" hidden>
+            <button class="button primary compact" id="applyCropButton" type="button">切抜を適用</button>
+            <button class="button compact" id="cancelCropButton" type="button">キャンセル</button>
+          </div>
+        </section>
+
+        <aside class="side-panel" id="sidePanel">
+          <section class="panel-section layers-section" data-mobile-panel-content="layers">
+            <div class="section-title">
+              <h2>レイヤー</h2>
+              <div class="mini-actions">
+                <button class="icon-action" id="duplicateLayerButton" type="button" title="複製">複製</button>
+                <button class="icon-action danger" id="deleteLayerButton" type="button" title="削除">削除</button>
+              </div>
+            </div>
+            <div id="layerList" class="layer-list" aria-live="polite"></div>
+          </section>
+
+          <section class="panel-section properties-section" data-mobile-panel-content="properties">
+            <div class="section-title">
+              <h2>レイヤー調整</h2>
+            </div>
+            <form id="propertiesForm" class="properties">
+              <div class="empty-state" id="emptyProperties">レイヤーを選択してください</div>
+
+              <div class="property-grid" data-prop-group>
+                <label class="span-2">
+                  名前
+                  <input id="layerName" type="text" autocomplete="off">
+                </label>
+                <label>
+                  X
+                  <input id="layerX" type="number" step="1">
+                </label>
+                <label>
+                  Y
+                  <input id="layerY" type="number" step="1">
+                </label>
+                <label>
+                  幅
+                  <input id="layerWidth" type="number" min="1" step="1">
+                </label>
+                <label>
+                  高さ
+                  <input id="layerHeight" type="number" min="1" step="1">
+                </label>
+                <label class="check-label span-2" id="aspectLockLabel">
+                  <input id="aspectLock" type="checkbox" checked>
+                  画像の比率を固定
+                </label>
+                <label>
+                  回転
+                  <input id="layerRotation" type="number" step="1">
+                </label>
+                <label>
+                  透明度
+                  <input id="layerOpacity" type="range" min="0" max="100" value="100">
+                </label>
+                <label class="span-2">
+                  合成
+                  <select id="blendMode">
+                    <option value="source-over">通常</option>
+                    <option value="multiply">乗算</option>
+                    <option value="screen">スクリーン</option>
+                    <option value="overlay">オーバーレイ</option>
+                    <option value="darken">比較(暗)</option>
+                    <option value="lighten">比較(明)</option>
+                    <option value="color-dodge">覆い焼き</option>
+                    <option value="color-burn">焼き込み</option>
+                    <option value="hard-light">ハードライト</option>
+                    <option value="soft-light">ソフトライト</option>
+                    <option value="difference">差の絶対値</option>
+                    <option value="luminosity">輝度</option>
+                  </select>
+                </label>
+                <div class="span-2 split-buttons">
+                  <button class="button compact" id="flipXButton" type="button">左右反転</button>
+                  <button class="button compact" id="flipYButton" type="button">上下反転</button>
+                </div>
+              </div>
+
+              <div class="property-block" id="appearanceGroup" data-prop-group>
+                <h3>見た目</h3>
+                <label>
+                  色
+                  <input id="fillColor" type="color" value="#2dd4bf">
+                </label>
+                <label id="textContentLabel" class="textarea-label">
+                  文字
+                  <textarea id="textContent" rows="3"></textarea>
+                </label>
+                <label id="fontSizeLabel">
+                  文字サイズ
+                  <input id="fontSize" type="range" min="16" max="220" value="72">
+                </label>
+                <div class="outline-controls" id="textOutlineGroup">
+                  <label class="check-label">
+                    <input id="textOutlineEnabled" type="checkbox">
+                    縁取り
+                  </label>
+                  <label>
+                    縁色
+                    <input id="textOutlineColor" type="color" value="#ffffff">
+                  </label>
+                  <label>
+                    太さ
+                    <input id="textOutlineWidth" type="range" min="0" max="36" value="6">
+                  </label>
+                </div>
+                <div class="shadow-controls" id="textShadowGroup">
+                  <label class="check-label">
+                    <input id="textShadowEnabled" type="checkbox">
+                    シャドウ
+                  </label>
+                  <label>
+                    影色
+                    <input id="textShadowColor" type="color" value="#000000">
+                  </label>
+                  <label>
+                    濃さ
+                    <input id="textShadowOpacity" type="range" min="0" max="100" value="45">
+                  </label>
+                  <label>
+                    ぼかし
+                    <input id="textShadowBlur" type="range" min="0" max="80" value="18">
+                  </label>
+                  <label>
+                    横
+                    <input id="textShadowX" type="number" step="1" value="8">
+                  </label>
+                  <label>
+                    縦
+                    <input id="textShadowY" type="number" step="1" value="10">
+                  </label>
+                </div>
+              </div>
+
+              <div class="property-block" data-prop-group>
+                <h3>フィルタ</h3>
+                <label>
+                  明るさ
+                  <input id="brightness" type="range" min="0" max="200" value="100">
+                </label>
+                <label>
+                  コントラスト
+                  <input id="contrast" type="range" min="0" max="200" value="100">
+                </label>
+                <label>
+                  彩度
+                  <input id="saturation" type="range" min="0" max="200" value="100">
+                </label>
+                <label>
+                  ぼかし
+                  <input id="blur" type="range" min="0" max="24" value="0">
+                </label>
+                <button class="button compact" id="resetFiltersButton" type="button">フィルタ初期化</button>
+              </div>
+            </form>
+          </section>
+        </aside>
+      </main>
+
+      <button class="mobile-sheet-scrim" id="mobileSheetScrim" type="button" aria-label="パネルを閉じる" hidden></button>
+    </div>
+
+    <script src="app.js"></script>
+  </body>
+</html>

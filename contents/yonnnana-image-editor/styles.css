@@ -249,6 +249,7 @@ button {
   width: 86px;
 }
 
+.background-controls,
 .brush-controls {
   align-items: center;
   border-left: 1px solid var(--line);
@@ -256,6 +257,11 @@ button {
   gap: 10px;
   margin-left: 4px;
   padding-left: 12px;
+}
+
+.background-controls .check-label {
+  align-self: end;
+  min-height: 34px;
 }
 
 input,
@@ -691,6 +697,7 @@ textarea {
     width: 76px;
   }
 
+  .background-controls,
   .brush-controls {
     border-left: 0;
     flex: 0 0 auto;

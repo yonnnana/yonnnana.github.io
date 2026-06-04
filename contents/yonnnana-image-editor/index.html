@@ -81,6 +81,16 @@
             </label>
             <button class="button compact" id="applyCanvasSize" type="button">サイズ適用</button>
             <button class="button compact" id="fitViewButton" type="button">表示調整</button>
+            <div class="background-controls" aria-label="背景設定">
+              <label class="check-label">
+                <input id="backgroundEnabled" type="checkbox">
+                背景
+              </label>
+              <label>
+                背景色
+                <input id="backgroundColor" type="color" value="#ffffff">
+              </label>
+            </div>
             <div class="brush-controls" aria-label="ブラシ設定">
               <label>
                 色
@@ -191,6 +201,28 @@
                 <label id="fontSizeLabel">
                   文字サイズ
                   <input id="fontSize" type="range" min="16" max="220" value="72">
+                </label>
+                <label id="fontFamilyLabel">
+                  フォント
+                  <select id="fontFamily">
+                    <option value="&quot;Yu Gothic UI&quot;, &quot;Hiragino Sans&quot;, &quot;Meiryo&quot;, sans-serif">ゴシック</option>
+                    <option value="&quot;Yu Mincho&quot;, &quot;Hiragino Mincho ProN&quot;, &quot;MS Mincho&quot;, serif">明朝</option>
+                    <option value="Arial, sans-serif">Arial</option>
+                    <option value="Verdana, sans-serif">Verdana</option>
+                    <option value="Georgia, serif">Georgia</option>
+                    <option value="&quot;Times New Roman&quot;, serif">Times</option>
+                    <option value="&quot;Courier New&quot;, monospace">Courier</option>
+                    <option value="Impact, fantasy">Impact</option>
+                    <option value="&quot;HGP創英角ポップ体&quot;, &quot;HGS創英角ポップ体&quot;, &quot;Comic Sans MS&quot;, cursive">ポップ体</option>
+                  </select>
+                </label>
+                <label id="textAlignLabel">
+                  文字揃え
+                  <select id="textAlign">
+                    <option value="left">左寄せ</option>
+                    <option value="center">中央寄せ</option>
+                    <option value="right">右寄せ</option>
+                  </select>
                 </label>
                 <div class="outline-controls" id="textOutlineGroup">
                   <label class="check-label">

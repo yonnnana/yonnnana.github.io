@@ -19,6 +19,8 @@ const dom = {
   fitViewButton: document.getElementById("fitViewButton"),
   canvasWidth: document.getElementById("canvasWidth"),
   canvasHeight: document.getElementById("canvasHeight"),
+  backgroundEnabled: document.getElementById("backgroundEnabled"),
+  backgroundColor: document.getElementById("backgroundColor"),
   brushColor: document.getElementById("brushColor"),
   brushSize: document.getElementById("brushSize"),
   dropZone: document.getElementById("dropZone"),
@@ -50,6 +52,10 @@ const dom = {
   textContent: document.getElementById("textContent"),
   fontSizeLabel: document.getElementById("fontSizeLabel"),
   fontSize: document.getElementById("fontSize"),
+  fontFamilyLabel: document.getElementById("fontFamilyLabel"),
+  fontFamily: document.getElementById("fontFamily"),
+  textAlignLabel: document.getElementById("textAlignLabel"),
+  textAlign: document.getElementById("textAlign"),
   textOutlineGroup: document.getElementById("textOutlineGroup"),
   textOutlineEnabled: document.getElementById("textOutlineEnabled"),
   textOutlineColor: document.getElementById("textOutlineColor"),
@@ -90,6 +96,13 @@ const DEFAULT_TEXT_OUTLINE = {
   width: 6,
 };
 
+const DEFAULT_BACKGROUND = {
+  enabled: false,
+  color: "#ffffff",
+};
+
+const DEFAULT_FONT_FAMILY = "\"Yu Gothic UI\", \"Hiragino Sans\", \"Meiryo\", sans-serif";
+
 const MAX_PREVIEW_EDGE = 1800;
 const MAX_PREVIEW_PIXELS = 2400000;
 const HISTORY_LIMIT = 20;
@@ -102,6 +115,7 @@ const state = {
   height: 720,
   layers: [],
   activeId: null,
+  background: { ...DEFAULT_BACKGROUND },
   tool: "select",
   brush: {
     color: "#111827",
@@ -181,6 +195,33 @@ function copyTextOutline(outline = DEFAULT_TEXT_OUTLINE) {
     color: outline.color || DEFAULT_TEXT_OUTLINE.color,
     width: Number(outline.width ?? DEFAULT_TEXT_OUTLINE.width),
   };
+}
+
+function copyBackground(background = DEFAULT_BACKGROUND) {
+  return {
+    enabled: Boolean(background.enabled),
+    color: background.color || DEFAULT_BACKGROUND.color,
+  };
+}
+
+function textFont(layer, fontSize) {
+  return `700 ${fontSize}px ${layer.fontFamily || DEFAULT_FONT_FAMILY}`;
+}
+
+function alignTextLayerToCanvas(layer) {
+  if (!layer || layer.type !== "text") return;
+
+  if (layer.textAlign === "left") {
+    layer.x = layer.width / 2;
+    return;
+  }
+
+  if (layer.textAlign === "right") {
+    layer.x = state.width - layer.width / 2;
+    return;
+  }
+
+  layer.x = state.width / 2;
 }
 
 function hexToRgba(hex, opacityPercent) {
@@ -347,6 +388,9 @@ function setCanvasSize(width, height, resizePaintLayers = true) {
   if (oldWidth !== state.width || oldHeight !== state.height) {
     state.crop = null;
     dom.cropActions.hidden = true;
+    state.layers
+      .filter((layer) => layer.type === "text")
+      .forEach((layer) => alignTextLayerToCanvas(layer));
   }
 }
 
@@ -355,6 +399,7 @@ function snapshot() {
     width: state.width,
     height: state.height,
     activeId: state.activeId,
+    background: copyBackground(state.background),
     layers: state.layers.map((layer) => serializeLayer(layer)),
   };
 }
@@ -380,6 +425,8 @@ function serializeLayer(layer) {
     shape: layer.shape,
     text: layer.text,
     fontSize: layer.fontSize,
+    fontFamily: layer.fontFamily,
+    textAlign: layer.textAlign,
     shadow: copyTextShadow(layer.shadow),
     outline: copyTextOutline(layer.outline),
     aspectRatio: layer.aspectRatio || null,
@@ -420,11 +467,13 @@ async function restoreSnapshot(nextSnapshot) {
   state.width = nextSnapshot.width;
   state.height = nextSnapshot.height;
   state.activeId = nextSnapshot.activeId;
+  state.background = copyBackground(nextSnapshot.background);
   state.crop = null;
   dom.cropActions.hidden = true;
   configurePreviewCanvas();
   dom.canvasWidth.value = state.width;
   dom.canvasHeight.value = state.height;
+  syncBackgroundControls();
   state.layers = await Promise.all(nextSnapshot.layers.map((layer) => hydrateLayer(layer)));
   renderLayerList();
   syncProperties();
@@ -441,6 +490,8 @@ async function hydrateLayer(data) {
     flipX: Boolean(data.flipX),
     flipY: Boolean(data.flipY),
     filters: copyFilters(data.filters),
+    fontFamily: data.fontFamily || DEFAULT_FONT_FAMILY,
+    textAlign: data.textAlign || "center",
     shadow: copyTextShadow(data.shadow),
     outline: copyTextOutline(data.outline),
     aspectRatio: Number(data.aspectRatio) || null,
@@ -608,6 +659,8 @@ async function projectLayerFromLayer(layer, assetMap) {
     shape: layer.shape,
     text: layer.text,
     fontSize: layer.fontSize,
+    fontFamily: layer.fontFamily,
+    textAlign: layer.textAlign,
     shadow: copyTextShadow(layer.shadow),
     outline: copyTextOutline(layer.outline),
     aspectRatio: layer.aspectRatio || null,
@@ -665,6 +718,7 @@ async function buildProjectBlob() {
     canvas: {
       width: state.width,
       height: state.height,
+      background: copyBackground(state.background),
     },
     activeId: state.activeId,
     layers,
@@ -754,6 +808,7 @@ async function loadProject(file) {
 
     await restoreSnapshot({
       activeId: manifest.activeId,
+      background: manifest.canvas.background,
       height: manifest.canvas.height,
       layers: projectLayers,
       width: manifest.canvas.width,
@@ -821,6 +876,8 @@ function baseLayer(options) {
     flipX: false,
     flipY: false,
     filters: copyFilters(),
+    fontFamily: DEFAULT_FONT_FAMILY,
+    textAlign: "center",
     shadow: copyTextShadow(),
     outline: copyTextOutline(),
     aspectRatio: null,
@@ -857,11 +914,14 @@ function addText() {
     name: "テキスト",
     text: "Text",
     fontSize: Math.max(32, Math.min(86, state.width * 0.07)),
+    fontFamily: DEFAULT_FONT_FAMILY,
+    textAlign: "center",
     color: "#172033",
     shadow: copyTextShadow(),
     outline: copyTextOutline(),
   });
   measureTextLayer(layer);
+  alignTextLayerToCanvas(layer);
   state.layers.push(layer);
   state.activeId = layer.id;
   setTool("select");
@@ -900,7 +960,7 @@ function measureTextLayer(layer) {
   const outlinePad = outline.enabled ? outline.width * 2 : 0;
   ctx.save();
   ctx.setTransform(1, 0, 0, 1, 0, 0);
-  ctx.font = `700 ${fontSize}px "Yu Gothic UI", "Hiragino Sans", "Meiryo", sans-serif`;
+  ctx.font = textFont(layer, fontSize);
   const lines = String(layer.text || "").split("\n");
   const width = Math.max(...lines.map((line) => ctx.measureText(line || " ").width), 24);
   layer.width = Math.ceil(width + fontSize * 0.42 + outlinePad);
@@ -911,12 +971,25 @@ function measureTextLayer(layer) {
 function render() {
   const fast = shouldUseFastPreview();
   beginPreviewRender(fast);
+  drawBackground(ctx);
   drawScene(ctx, { fast });
 
   const selected = activeLayer();
   if (selected && selected.visible) drawSelection(selected);
   if (state.crop) drawCropOverlay();
   finishPreviewRender();
+}
+
+function drawBackground(targetContext) {
+  const background = copyBackground(state.background);
+  if (!background.enabled) return;
+  targetContext.save();
+  targetContext.filter = "none";
+  targetContext.globalAlpha = 1;
+  targetContext.globalCompositeOperation = "source-over";
+  targetContext.fillStyle = background.color;
+  targetContext.fillRect(0, 0, state.width, state.height);
+  targetContext.restore();
 }
 
 function drawScene(targetContext, options = {}) {
@@ -961,7 +1034,7 @@ function drawLayer(targetContext, layer, options = {}) {
     const shadow = copyTextShadow(layer.shadow);
     const outline = copyTextOutline(layer.outline);
     targetContext.fillStyle = layer.color || "#172033";
-    targetContext.font = `700 ${fontSize}px "Yu Gothic UI", "Hiragino Sans", "Meiryo", sans-serif`;
+    targetContext.font = textFont(layer, fontSize);
     targetContext.textAlign = "center";
     targetContext.textBaseline = "middle";
     targetContext.lineJoin = "round";
@@ -973,13 +1046,14 @@ function drawLayer(targetContext, layer, options = {}) {
       targetContext.shadowOffsetY = shadow.offsetY;
     }
     const startY = -((lines.length - 1) * lineHeight) / 2;
+    const textX = 0;
     lines.forEach((line, index) => {
       if (outline.enabled && outline.width > 0) {
         targetContext.strokeStyle = outline.color;
         targetContext.lineWidth = outline.width;
-        targetContext.strokeText(line || " ", 0, startY + index * lineHeight);
+        targetContext.strokeText(line || " ", textX, startY + index * lineHeight);
       }
-      targetContext.fillText(line || " ", 0, startY + index * lineHeight);
+      targetContext.fillText(line || " ", textX, startY + index * lineHeight);
     });
   }
 
@@ -1526,6 +1600,8 @@ function cloneLayer(layer) {
     x: layer.type === "paint" ? layer.x : layer.x + 24,
     y: layer.type === "paint" ? layer.y : layer.y + 24,
     filters: copyFilters(layer.filters),
+    fontFamily: layer.fontFamily || DEFAULT_FONT_FAMILY,
+    textAlign: layer.textAlign || "center",
     shadow: copyTextShadow(layer.shadow),
     outline: copyTextOutline(layer.outline),
     aspectRatio: layer.aspectRatio,
@@ -1558,6 +1634,20 @@ function deleteLayer(id = state.activeId) {
   renderLayerList();
   syncProperties();
   render();
+}
+
+function syncBackgroundControls() {
+  const background = copyBackground(state.background);
+  dom.backgroundEnabled.checked = background.enabled;
+  dom.backgroundColor.value = background.color;
+}
+
+function applyBackgroundValues() {
+  state.background = {
+    enabled: dom.backgroundEnabled.checked,
+    color: dom.backgroundColor.value,
+  };
+  queueRender();
 }
 
 function syncProperties(updateLayerList = true) {
@@ -1599,11 +1689,15 @@ function syncProperties(updateLayerList = true) {
   dom.appearanceGroup.hidden = !(isShape || isText);
   dom.textContentLabel.hidden = !isText;
   dom.fontSizeLabel.hidden = !isText;
+  dom.fontFamilyLabel.hidden = !isText;
+  dom.textAlignLabel.hidden = !isText;
   dom.textOutlineGroup.hidden = !isText;
   dom.textShadowGroup.hidden = !isText;
   dom.fillColor.value = isText ? layer.color || "#172033" : layer.fill || "#2dd4bf";
   dom.textContent.value = layer.text || "";
   dom.fontSize.value = layer.fontSize || 72;
+  dom.fontFamily.value = layer.fontFamily || DEFAULT_FONT_FAMILY;
+  dom.textAlign.value = layer.textAlign || "center";
   dom.textOutlineEnabled.checked = outline.enabled;
   dom.textOutlineColor.value = outline.color;
   dom.textOutlineWidth.value = round(outline.width);
@@ -1681,6 +1775,8 @@ function applyPropertyValues(event) {
     layer.color = dom.fillColor.value;
     layer.text = dom.textContent.value;
     layer.fontSize = Number(dom.fontSize.value) || layer.fontSize;
+    layer.fontFamily = dom.fontFamily.value || DEFAULT_FONT_FAMILY;
+    layer.textAlign = dom.textAlign.value || "center";
     layer.shadow = {
       enabled: dom.textShadowEnabled.checked,
       color: dom.textShadowColor.value,
@@ -1695,8 +1791,12 @@ function applyPropertyValues(event) {
       width: Number(dom.textOutlineWidth.value),
     };
     measureTextLayer(layer);
+    if (shouldRealignTextLayer(event?.target)) {
+      alignTextLayerToCanvas(layer);
+    }
     dom.layerWidth.value = round(layer.width);
     dom.layerHeight.value = round(layer.height);
+    dom.layerX.value = round(layer.x);
   }
 
   if (!event || event.target === dom.layerName || event.target === dom.layerOpacity) {
@@ -1708,6 +1808,17 @@ function applyPropertyValues(event) {
 function numericField(input, fallback) {
   const value = Number(input.value);
   return Number.isFinite(value) ? value : fallback;
+}
+
+function shouldRealignTextLayer(target) {
+  return [
+    dom.textAlign,
+    dom.textContent,
+    dom.fontSize,
+    dom.fontFamily,
+    dom.textOutlineEnabled,
+    dom.textOutlineWidth,
+  ].includes(target);
 }
 
 function resetFilters() {
@@ -1799,6 +1910,7 @@ function exportImage(mimeType) {
     outputContext.fillRect(0, 0, output.width, output.height);
   }
 
+  drawBackground(outputContext);
   drawScene(outputContext, { fast: false });
 
   const saveCanvas = mimeType === "image/png" ? trimTransparentCanvas(output) : output;
@@ -1875,6 +1987,18 @@ function bindEvents() {
     state.brush.size = Number(dom.brushSize.value);
   });
 
+  [dom.backgroundEnabled, dom.backgroundColor].forEach((control) => {
+    control.addEventListener("pointerdown", () => {
+      if (!controlSnapshot) controlSnapshot = snapshot();
+    });
+    control.addEventListener("focusin", () => {
+      if (!controlSnapshot) controlSnapshot = snapshot();
+    });
+    control.addEventListener("input", applyBackgroundValues);
+    control.addEventListener("change", commitControlHistory);
+    control.addEventListener("focusout", commitControlHistory);
+  });
+
   dom.propertiesForm.addEventListener("pointerdown", (event) => {
     if (event.target.matches("input, select, textarea") && !event.target.disabled && !controlSnapshot) {
       controlSnapshot = snapshot();
@@ -1888,7 +2012,10 @@ function bindEvents() {
   });
 
   dom.propertiesForm.addEventListener("input", applyPropertyValues);
-  dom.propertiesForm.addEventListener("change", commitControlHistory);
+  dom.propertiesForm.addEventListener("change", (event) => {
+    applyPropertyValues(event);
+    commitControlHistory();
+  });
   dom.propertiesForm.addEventListener("focusout", commitControlHistory);
 
   canvas.addEventListener("pointerdown", onPointerDown);
@@ -1935,6 +2062,7 @@ function bindEvents() {
 setCanvasSize(state.width, state.height, false);
 bindEvents();
 renderLayerList();
+syncBackgroundControls();
 syncProperties();
 syncMobileLayout();
 render();

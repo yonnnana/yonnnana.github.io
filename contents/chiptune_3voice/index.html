@@ -1,0 +1,573 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="light dark" />
+    <link rel="icon" href="data:," />
+    <title>3音チップチューン試聴デモ</title>
+    <style>
+      :root{
+        --bg:#e9ede1;
+        --panel:#f7f9f1;
+        --panel2:#eef2e4;
+        --ink:#1d2415;
+        --ink-dim:#5a6650;
+        --line:#c9d2b8;
+        --accent:#4f7d16;
+        --accent-ink:#ffffff;
+        --mel:#b45309;
+        --mel-bg:#f59e0b;
+        --arp:#4d7c0f;
+        --arp-bg:#84cc16;
+        --bass:#0e7490;
+        --bass-bg:#22a7c6;
+        --noise:#6b7280;
+        --noise-bg:#9ca3af;
+        --sfx:#be123c;
+        --play-col:rgba(79,125,22,.16);
+        --shadow:0 1px 3px rgba(29,36,21,.14);
+      }
+      @media (prefers-color-scheme: dark){
+        :root{
+          --bg:#0f120b;
+          --panel:#171c11;
+          --panel2:#1e2515;
+          --ink:#e6ecd9;
+          --ink-dim:#9aa78c;
+          --line:#39432c;
+          --accent:#a3c94e;
+          --accent-ink:#141a0c;
+          --mel:#fbbf24;
+          --mel-bg:#d97706;
+          --arp:#a3e635;
+          --arp-bg:#65a30d;
+          --bass:#38bdf8;
+          --bass-bg:#0284c7;
+          --noise:#9ca3af;
+          --noise-bg:#6b7280;
+          --sfx:#fb7185;
+          --play-col:rgba(163,201,78,.20);
+          --shadow:0 1px 3px rgba(0,0,0,.5);
+        }
+      }
+      *{box-sizing:border-box}
+      html,body{margin:0;padding:0}
+      body{
+        background:var(--bg);
+        color:var(--ink);
+        font-family:"Hiragino Kaku Gothic ProN","Hiragino Sans","Yu Gothic UI","Yu Gothic",Meiryo,system-ui,sans-serif;
+        line-height:1.6;
+        -webkit-text-size-adjust:100%;
+      }
+      .mono{font-family:ui-monospace,"SF Mono",Menlo,Consolas,monospace}
+      main{max-width:880px;margin:0 auto;padding:20px 16px 48px}
+      h1{font-size:1.45rem;line-height:1.35;margin:0 0 6px;letter-spacing:.01em}
+      .lead{color:var(--ink-dim);font-size:.92rem;margin:0 0 18px}
+      .lead b{color:var(--ink)}
+
+      /* transport */
+      .transport{
+        display:flex;flex-wrap:wrap;gap:12px;align-items:stretch;
+        background:var(--panel);border:1px solid var(--line);border-radius:10px;
+        padding:14px;box-shadow:var(--shadow);margin-bottom:14px;
+      }
+      #playBtn{
+        min-height:56px;min-width:132px;padding:10px 22px;
+        font-size:1.05rem;font-weight:700;cursor:pointer;
+        background:var(--accent);color:var(--accent-ink);
+        border:none;border-radius:8px;
+      }
+      #playBtn:active{transform:translateY(1px)}
+      .nowbox{display:flex;gap:18px;flex-wrap:wrap;align-items:center}
+      .nowitem .lab{font-size:.7rem;color:var(--ink-dim);letter-spacing:.08em}
+      .nowitem .val{font-size:1.3rem;font-weight:700;line-height:1.2}
+      #chordVal{color:var(--accent)}
+      #sfxFlag{
+        display:none;align-self:center;font-size:.8rem;font-weight:700;
+        color:var(--sfx);border:1px solid var(--sfx);border-radius:999px;padding:4px 12px;
+      }
+      #sfxFlag.on{display:inline-block}
+      .progline{display:flex;gap:6px;flex-wrap:wrap;margin-top:2px}
+      .progchip{
+        font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.85rem;font-weight:700;
+        border:1px solid var(--line);border-radius:6px;padding:3px 10px;background:var(--panel2);color:var(--ink-dim);
+      }
+      .progchip.cur{background:var(--accent);color:var(--accent-ink);border-color:var(--accent)}
+
+      /* toggles */
+      .controls{
+        display:grid;grid-template-columns:1fr;gap:10px;margin-bottom:14px;
+      }
+      @media (min-width:640px){.controls{grid-template-columns:1fr 1fr}}
+      .ctl{
+        display:flex;gap:12px;align-items:flex-start;text-align:left;width:100%;
+        background:var(--panel);border:1px solid var(--line);border-radius:10px;
+        padding:12px 14px;cursor:pointer;box-shadow:var(--shadow);color:var(--ink);
+        min-height:44px;font:inherit;
+      }
+      .ctl .tx{flex:1;min-width:0}
+      .ctl .name{font-weight:700;font-size:.98rem;display:block}
+      .ctl .desc{font-size:.8rem;color:var(--ink-dim);display:block;margin-top:2px;line-height:1.5}
+      .sw{
+        flex:none;width:52px;height:30px;border-radius:999px;margin-top:2px;
+        background:var(--line);position:relative;transition:background .15s;
+      }
+      .sw::after{
+        content:"";position:absolute;top:3px;left:3px;width:24px;height:24px;border-radius:50%;
+        background:#fff;box-shadow:0 1px 2px rgba(0,0,0,.35);transition:left .15s;
+      }
+      .ctl[aria-pressed="true"] .sw{background:var(--accent)}
+      .ctl[aria-pressed="true"] .sw::after{left:25px}
+      .ctl .state{font-size:.75rem;font-weight:700;color:var(--accent);white-space:nowrap;margin-top:6px}
+      .ctl[aria-pressed="false"] .state{color:var(--ink-dim)}
+
+      /* piano roll */
+      .roll{
+        background:var(--panel);border:1px solid var(--line);border-radius:10px;
+        padding:14px;box-shadow:var(--shadow);margin-bottom:14px;overflow:hidden;
+      }
+      .roll h2{font-size:1rem;margin:0 0 4px}
+      .roll .hint{font-size:.8rem;color:var(--ink-dim);margin:0 0 12px}
+      .barhead,.lane{display:grid;grid-template-columns:64px 1fr;gap:8px}
+      @media (max-width:480px){.barhead,.lane{grid-template-columns:56px 1fr;gap:6px}.lane .meta .vn{font-size:.76rem}}
+      .barhead .spacer{font-size:.68rem;color:var(--ink-dim);display:flex;align-items:flex-end}
+      .bartrack{position:relative;height:22px}
+      .barlab{
+        position:absolute;top:0;height:22px;display:flex;align-items:center;justify-content:center;
+        font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.78rem;font-weight:700;
+        border-left:1px solid var(--line);color:var(--ink-dim);
+      }
+      .barlab.cur{color:var(--accent)}
+      .lane{margin-top:8px}
+      .lane .meta{display:flex;flex-direction:column;justify-content:center;min-width:0}
+      .lane .meta .vn{font-size:.82rem;font-weight:700;line-height:1.3}
+      .lane .meta .vw{font-size:.66rem;color:var(--ink-dim);line-height:1.35}
+      .lane.off .meta .vn{color:var(--ink-dim);text-decoration:line-through}
+      .track{
+        position:relative;height:56px;border:1px solid var(--line);border-radius:6px;
+        background:
+          repeating-linear-gradient(to right, transparent 0, transparent calc(12.5% - 1px), var(--line) calc(12.5% - 1px), var(--line) 12.5%),
+          var(--panel2);
+        overflow:hidden;
+      }
+      .track.short{height:34px}
+      .note{
+        position:absolute;height:16px;border-radius:3px;
+        display:flex;align-items:center;justify-content:center;
+        font-family:ui-monospace,Menlo,Consolas,monospace;font-size:.62rem;font-weight:700;
+        color:#fff;overflow:hidden;white-space:nowrap;padding:0 2px;
+        text-shadow:0 1px 1px rgba(0,0,0,.35);
+      }
+      .track.short .note{height:12px;font-size:0}
+      .note.mel{background:var(--mel-bg)}
+      .note.arp{background:var(--arp-bg)}
+      .note.bass{background:var(--bass-bg)}
+      .note.noise{background:var(--noise-bg);height:10px}
+      .note.playing{outline:2px solid var(--ink);outline-offset:-1px;filter:brightness(1.25)}
+      .note.stolen{opacity:.22;filter:grayscale(.8)}
+      .lane.off .note{opacity:.18;filter:grayscale(.9)}
+      #playhead{
+        position:absolute;top:0;bottom:0;width:2px;background:var(--accent);
+        left:0;display:none;pointer-events:none;z-index:3;
+      }
+      .stealmark{
+        position:absolute;top:0;bottom:0;background:rgba(190,18,60,.13);
+        border-left:1px dashed var(--sfx);display:none;z-index:1;pointer-events:none;
+      }
+      .stealmark span{
+        position:absolute;top:2px;left:3px;font-size:.58rem;font-weight:700;color:var(--sfx);white-space:nowrap;
+      }
+
+      /* notes / explanation */
+      .memo{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px;box-shadow:var(--shadow)}
+      .memo h2{font-size:1rem;margin:0 0 10px}
+      .memo h3{font-size:.92rem;margin:16px 0 4px}
+      .memo p,.memo li{font-size:.88rem}
+      .memo p{margin:0 0 8px}
+      .memo ul{margin:4px 0 8px;padding-left:1.3em}
+      .memo li{margin-bottom:4px}
+      .keyline{
+        border-left:4px solid var(--accent);background:var(--panel2);
+        padding:10px 12px;border-radius:0 8px 8px 0;font-weight:700;font-size:.92rem;margin:12px 0;
+      }
+      table.spec{border-collapse:collapse;width:100%;font-size:.85rem;margin:6px 0 4px}
+      table.spec th,table.spec td{border:1px solid var(--line);padding:6px 8px;text-align:left;vertical-align:top}
+      table.spec th{background:var(--panel2);white-space:nowrap}
+      .foot{font-size:.78rem;color:var(--ink-dim);margin-top:14px}
+      @media (max-width:560px){
+        /* 64ステップ幅では音名が収まらないので、狭い画面ではブロックのみ表示 */
+        .note{font-size:0}
+      }
+      @media (prefers-reduced-motion: reduce){
+        .sw,.sw::after{transition:none}
+        #playBtn:active{transform:none}
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <h1>3音で作るチップチューン試聴デモ</h1>
+      <p class="lead">
+        テンポ120、<b>8小節ループ</b>。コード進行は <b>C – Am – F – G</b> を1小節ずつ、2周します。
+        音はすべて Web Audio API でその場で合成していて、外部の音声ファイルは使っていません。
+        メロディ＋ベース＋アルペジオの<b>3声</b>が基本編成で、切り替えスイッチを変えると聞こえ方がどう崩れるか／変わるかを比べられます。
+      </p>
+
+      <section class="transport" aria-label="再生コントロール">
+        <button id="playBtn" type="button">▶ 再生</button>
+        <div>
+          <div class="nowbox">
+            <div class="nowitem"><div class="lab">小節</div><div class="val mono" id="barVal">– / 8</div></div>
+            <div class="nowitem"><div class="lab">現在のコード</div><div class="val mono" id="chordVal">–</div></div>
+            <div class="nowitem"><div class="lab">テンポ</div><div class="val mono">120</div></div>
+            <span id="sfxFlag">SFXがアルペジオを奪い中</span>
+          </div>
+          <div class="progline" id="progLine" aria-hidden="true"></div>
+        </div>
+      </section>
+
+      <section class="controls" aria-label="切り替えスイッチ">
+        <button class="ctl" id="ctlArp" type="button" aria-pressed="true">
+          <span class="tx"><span class="name">① アルペジオ</span>
+          <span class="desc">OFFにするとメロディ＋ベースの2声だけになり、コード感が崩れます。和音の構成音はアルペジオが担っています。</span></span>
+          <span class="state" data-state>ON</span><span class="sw" aria-hidden="true"></span>
+        </button>
+        <button class="ctl" id="ctlSfx" type="button" aria-pressed="false">
+          <span class="tx"><span class="name">② SFXがチャンネルを奪う</span>
+          <span class="desc">ONにすると2小節ごとにジャンプ風の効果音が鳴り、その間アルペジオのチャンネルが効果音に取られて音が抜けます。実機の「声数不足」の再現です。</span></span>
+          <span class="state" data-state>OFF</span><span class="sw" aria-hidden="true"></span>
+        </button>
+        <button class="ctl" id="ctlStereo" type="button" aria-pressed="true">
+          <span class="tx"><span class="name">③ ステレオ（GB風）／モノラル（FC風）</span>
+          <span class="desc">ONではメロディが左、アルペジオが右、ベースが中央に定位します（GB風）。OFFは全声センターのモノラル（FC風）です。ヘッドホン推奨。</span></span>
+          <span class="state" data-state>ON</span><span class="sw" aria-hidden="true"></span>
+        </button>
+        <button class="ctl" id="ctlBass" type="button" aria-pressed="true">
+          <span class="tx"><span class="name">④ ベース波形：GB波形メモリ風／FC三角波風</span>
+          <span class="desc">ONは倍音を含む太い波形メモリ風、OFFは基音だけの細い三角波風。同じ音程・同じフレーズでも低音の厚みが変わります。</span></span>
+          <span class="state" data-state>GB波形</span><span class="sw" aria-hidden="true"></span>
+        </button>
+        <button class="ctl" id="ctlNoise" type="button" aria-pressed="false">
+          <span class="tx"><span class="name">ノイズ（ハット代わり）</span>
+          <span class="desc">8分音符で刻むノイズです。ONにするとリズムの輪郭が出ます。任意の追加チャンネルとして用意しました。</span></span>
+          <span class="state" data-state>OFF</span><span class="sw" aria-hidden="true"></span>
+        </button>
+      </section>
+
+      <section class="roll" aria-label="ピアノロール表示">
+        <h2>ピアノロール：どの声が何を弾いているか</h2>
+        <p class="hint">横軸は8小節（64ステップ＝8分音符単位）。再生位置に合わせて光ります。SFXがONのとき、赤い帯の部分が「アルペジオが奪われて抜ける」区間です。</p>
+        <div class="barhead"><div class="spacer">小節→</div><div class="bartrack" id="barTrack"></div></div>
+        <div id="lanes"></div>
+      </section>
+
+      <section class="memo" aria-label="解説">
+        <h2>解説：声数の数え方</h2>
+        <table class="spec">
+          <tr><th>FC（ファミコン）</th><td>厳密には<b>5声</b>：パルス波×2、三角波×1、ノイズ×1、DPCM×1</td></tr>
+          <tr><th>GB（ゲームボーイ）</th><td><b>4声</b>：パルス波×2、波形メモリ×1、ノイズ×1</td></tr>
+        </table>
+        <p>ただしFCのDPCMはサンプルの再生専用なので、音楽の声として数えるとFCも4声になります。つまり両機とも「旋律を同時に鳴らせる声」は実質4声までで、その中でやりくりするのがチップチューンの作法です。</p>
+        <p class="keyline">3声は標準的な編成サイズであり、トリオ・ソナタや3声の対位法と同じ編成です。</p>
+        <p>このデモの3声の役割分担は次の通りです。</p>
+        <ul>
+          <li><b>メロディ（パルス波）</b>：4分音符×4／小節。主旋律。</li>
+          <li><b>アルペジオ（パルス波）</b>：8分音符で ルート→3度→5度→3度 を循環。和音を1声で表現する常套手段で、OFFにするとコード感が消えるのはこのためです。</li>
+          <li><b>ベース（2分音符）</b>：ルート→5度の順に進み、コードの根を支えます。</li>
+          <li><b>ノイズ</b>：音程を持たない打楽器代わり。8分音符の刻みです。</li>
+        </ul>
+        <h3>スイッチ②について</h3>
+        <p>実機では効果音も同じ音源チップから出すため、ジャンプ音が鳴る瞬間、そのチャンネルで鳴っていた楽器の音は消えます。このデモでは効果音にアルペジオのチャンネルを割り当て、2小節ごとに一瞬だけアルペジオが抜けるようにしています。ピアノロールの赤い帯と見比べてください。</p>
+        <p class="foot">再生はブラウザの音声合成（Web Audio API）のみで、録音済みの音声は使っていません。音量は端末側で調整してください。</p>
+      </section>
+    </main>
+
+    <script>
+    (function(){
+      "use strict";
+
+      /* ---------- data ---------- */
+      var CHORDS = ["C","Am","F","G","C","Am","F","G"];
+      var MELODY = [
+        ["E4","G4","A4","G4"],["A4","G4","E4","D4"],
+        ["F4","A4","C5","A4"],["G4","B4","D5","B4"],
+        ["C5","G4","E4","G4"],["A4","C5","A4","E4"],
+        ["F4","A4","G4","E4"],["D4","G4","B4","G4"]
+      ];
+      var BASS_BY_CHORD = { "C":["C3","G2"], "Am":["A2","E2"], "F":["F2","C3"], "G":["G2","D3"] };
+      var ARP_BY_CHORD  = { "C":["C4","E4","G4","E4"], "Am":["A3","C4","E4","C4"], "F":["F3","A3","C4","A3"], "G":["G3","B3","D4","B3"] };
+
+      // flatten: melody per quarter index 0..31, bass per half index 0..15, arp per eighth 0..63
+      var melFlat=[], bassFlat=[], arpFlat=[];
+      for(var b=0;b<8;b++){
+        for(var q=0;q<4;q++) melFlat.push(MELODY[b][q]);
+        var bb=BASS_BY_CHORD[CHORDS[b]]; bassFlat.push(bb[0],bb[1]);
+        var ap=ARP_BY_CHORD[CHORDS[b]];
+        for(var e=0;e<8;e++) arpFlat.push(ap[e%4]);
+      }
+
+      var SEMI={C:0,D:2,E:4,F:5,G:7,A:9,B:11};
+      function midi(name){
+        var m=/^([A-G])(\d)$/.exec(name); var oct=parseInt(m[2],10);
+        return 12*(oct+1)+SEMI[m[1]];
+      }
+      function freq(name){ return 440*Math.pow(2,(midi(name)-69)/12); }
+
+      /* ---------- state ---------- */
+      var state={ playing:false, arp:true, sfx:false, stereo:true, bassGB:true, noise:false };
+
+      /* ---------- audio ---------- */
+      var ctx=null, master=null, pans={}, pulseWave=null, gbBassWave=null, noiseBuf=null;
+      var BPM=120, EIGHTH=60/BPM/2, LOOP_STEPS=64, LOOP_DUR=EIGHTH*LOOP_STEPS;
+
+      function makePulseWave(duty){
+        var N=64, real=new Float32Array(N), imag=new Float32Array(N);
+        for(var n=1;n<N;n++){
+          imag[n]=(2/(n*Math.PI))*Math.sin(n*Math.PI*duty)*(1); // approx pulse spectrum (imag part)
+          real[n]=0;
+        }
+        // Build via cosine series for a pulse: use imag-only gives odd-ish shape; acceptable chiptune pulse
+        return ctx.createPeriodicWave(real, imag, {disableNormalization:false});
+      }
+      function makeGBBassWave(){
+        var N=32, real=new Float32Array(N), imag=new Float32Array(N);
+        var harm=[0,1,0.55,0.38,0.26,0.18,0.12,0.08];
+        for(var n=1;n<harm.length;n++) imag[n]=harm[n];
+        return ctx.createPeriodicWave(real, imag, {disableNormalization:false});
+      }
+      function ensureCtx(){
+        if(ctx) return;
+        ctx=new (window.AudioContext||window.webkitAudioContext)();
+        master=ctx.createGain(); master.gain.value=0.9; master.connect(ctx.destination);
+        ["mel","arp","bass","noise","sfx"].forEach(function(k){
+          var p=ctx.createStereoPanner ? ctx.createStereoPanner() : null;
+          var g=ctx.createGain(); g.gain.value=1;
+          if(p){ g.connect(p); p.connect(master); pans[k]=p; } else { g.connect(master); }
+          pans[k+"_g"]=g;
+        });
+        applyPans();
+        pulseWave=makePulseWave(0.25);
+        gbBassWave=makeGBBassWave();
+        var len=ctx.sampleRate*0.5, buf=ctx.createBuffer(1,len,ctx.sampleRate), d=buf.getChannelData(0);
+        for(var i=0;i<len;i++) d[i]=Math.random()*2-1;
+        noiseBuf=buf;
+      }
+      function applyPans(){
+        if(!ctx||!ctx.createStereoPanner) return;
+        var s=state.stereo;
+        pans.mel.pan.value = s? -0.6 : 0;
+        pans.arp.pan.value = s?  0.6 : 0;
+        pans.bass.pan.value= 0;
+        pans.noise.pan.value=0;
+        pans.sfx.pan.value = s?  0.6 : 0; // SFX rides the arpeggio channel
+      }
+
+      function env(g,t,a,peak,dur){
+        g.gain.setValueAtTime(0.0001,t);
+        g.gain.exponentialRampToValueAtTime(peak,t+a);
+        g.gain.setValueAtTime(peak,Math.max(t+a,t+dur-0.05));
+        g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+      }
+      function tone(destKey,noteName,t,dur,peak,wave){
+        var o=ctx.createOscillator(), g=ctx.createGain();
+        if(wave==="pulse") o.setPeriodicWave(pulseWave);
+        else if(wave==="gb") o.setPeriodicWave(gbBassWave);
+        else o.type=wave;
+        o.frequency.value=freq(noteName);
+        env(g,t,0.005,peak,dur);
+        o.connect(g); g.connect(pans[destKey+"_g"]);
+        o.start(t); o.stop(t+dur+0.05);
+      }
+      function hat(t,accent){
+        var src=ctx.createBufferSource(); src.buffer=noiseBuf;
+        var f=ctx.createBiquadFilter(); f.type="highpass"; f.frequency.value=6000;
+        var g=ctx.createGain();
+        var dur=accent?0.07:0.04, peak=accent?0.16:0.10;
+        g.gain.setValueAtTime(peak,t);
+        g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+        src.connect(f); f.connect(g); g.connect(pans.noise_g);
+        src.start(t); src.stop(t+dur+0.02);
+      }
+      function jumpSfx(t){
+        var o=ctx.createOscillator(), g=ctx.createGain();
+        o.type="square";
+        o.frequency.setValueAtTime(180,t);
+        o.frequency.exponentialRampToValueAtTime(920,t+0.32);
+        g.gain.setValueAtTime(0.0001,t);
+        g.gain.exponentialRampToValueAtTime(0.22,t+0.01);
+        g.gain.setValueAtTime(0.22,t+0.30);
+        g.gain.exponentialRampToValueAtTime(0.0001,t+0.38);
+        o.connect(g); g.connect(pans.sfx_g);
+        o.start(t); o.stop(t+0.42);
+      }
+      function isStolen(step){ return state.sfx && (step%16===8 || step%16===9); }
+
+      /* ---------- scheduler ---------- */
+      var timerID=null, nextStep=0, nextTime=0, firstTime=0;
+      function scheduleStep(step,t){
+        if(step%2===0) tone("mel", melFlat[step/2], t, EIGHTH*2*0.92, 0.20, "pulse");
+        if(step%4===0) tone("bass", bassFlat[step/4], t, EIGHTH*4*0.94, 0.30, state.bassGB?"gb":"triangle");
+        if(state.sfx && step%16===8) jumpSfx(t);
+        if(state.arp && !isStolen(step)) tone("arp", arpFlat[step], t, EIGHTH*0.9, 0.13, "pulse");
+        if(state.noise) hat(t, step%4===0);
+      }
+      function scheduler(){
+        while(nextTime < ctx.currentTime + 0.12){
+          scheduleStep(nextStep,nextTime);
+          nextTime += EIGHTH;
+          nextStep = (nextStep+1)%LOOP_STEPS;
+        }
+      }
+
+      /* ---------- piano roll UI ---------- */
+      var lanesEl=document.getElementById("lanes");
+      var barTrack=document.getElementById("barTrack");
+      var barLabels=[], progChips=[];
+      var progLine=document.getElementById("progLine");
+      CHORDS.forEach(function(c,i){
+        var d=document.createElement("div"); d.className="barlab mono";
+        d.style.left=(i*12.5)+"%"; d.style.width="12.5%"; d.textContent=(i+1)+" "+c;
+        barTrack.appendChild(d); barLabels.push(d);
+        var chip=document.createElement("span"); chip.className="progchip"; chip.textContent=c;
+        progLine.appendChild(chip); progChips.push(chip);
+      });
+
+      function pitchTop(name,min,max,h){
+        var m=midi(name), r=(m-min)/Math.max(1,(max-min));
+        return (1-r)*(h-18)+1;
+      }
+      function buildLane(id,label,wave,notes,spanSteps,cls,short,minN,maxN){
+        var lane=document.createElement("div"); lane.className="lane"; lane.id="lane-"+id;
+        var meta=document.createElement("div"); meta.className="meta";
+        meta.innerHTML='<span class="vn"></span><span class="vw"></span>';
+        meta.querySelector(".vn").textContent=label;
+        meta.querySelector(".vw").textContent=wave;
+        var track=document.createElement("div"); track.className="track"+(short?" short":"");
+        var H=short?34:56;
+        notes.forEach(function(n,i){
+          var el=document.createElement("div"); el.className="note "+cls; el.dataset.step=(i*spanSteps);
+          el.style.left=((i*spanSteps)/64*100)+"%";
+          el.style.width=(spanSteps/64*100)+"%";
+          if(minN) el.style.top=pitchTop(n,minN,maxN,H)+"px";
+          else el.style.top=((H- (short?12:10))/2)+"px";
+          el.textContent=n;
+          track.appendChild(el);
+        });
+        if(id==="mel"){
+          var ph=document.createElement("div"); ph.id="playhead"; track.appendChild(ph);
+        }
+        if(id==="arp"){
+          for(var k=0;k<4;k++){
+            var sm=document.createElement("div"); sm.className="stealmark"; sm.dataset.mark="1";
+            var startStep=k*16+8;
+            sm.style.left=(startStep/64*100)+"%"; sm.style.width=(2/64*100)+"%";
+            if(k===0) sm.innerHTML="<span>SFX</span>";
+            track.appendChild(sm);
+          }
+        }
+        lane.appendChild(meta); lane.appendChild(track);
+        lanesEl.appendChild(lane);
+        return track;
+      }
+      var melMin=Math.min.apply(null,melFlat.map(midi)), melMax=Math.max.apply(null,melFlat.map(midi));
+      var arpMin=Math.min.apply(null,arpFlat.map(midi)), arpMax=Math.max.apply(null,arpFlat.map(midi));
+      var basMin=Math.min.apply(null,bassFlat.map(midi)), basMax=Math.max.apply(null,bassFlat.map(midi));
+      var noiseNotes=[]; for(var ni=0;ni<64;ni++) noiseNotes.push("");
+      var melTrack =buildLane("mel","メロディ","パルス波・4分音符",melFlat,2,"mel",false,melMin,melMax);
+      var arpTrack =buildLane("arp","アルペジオ","パルス波・8分音符",arpFlat,1,"arp",false,arpMin,arpMax);
+      var bassTrack=buildLane("bass","ベース","波形メモリ／三角波・2分音符",bassFlat,4,"bass",false,basMin,basMax);
+      var noiTrack =buildLane("noise","ノイズ","ハット・8分音符",noiseNotes,1,"noise",true,null,null);
+      var playhead=document.getElementById("playhead");
+
+      function refreshLaneStates(){
+        document.getElementById("lane-arp").classList.toggle("off",!state.arp);
+        document.getElementById("lane-noise").classList.toggle("off",!state.noise);
+        document.getElementById("lane-bass").querySelector(".vw").textContent =
+          state.bassGB ? "波形メモリ風（太い）・2分音符" : "三角波風（細い）・2分音符";
+        var marks=arpTrack.querySelectorAll(".stealmark");
+        marks.forEach(function(m){ m.style.display=state.sfx?"block":"none"; });
+        var stolenNow = state.arp && state.sfx;
+        arpTrack.querySelectorAll(".note").forEach(function(el){
+          var s=parseInt(el.dataset.step,10);
+          el.classList.toggle("stolen", stolenNow && (s%16===8||s%16===9));
+        });
+      }
+
+      /* ---------- transport UI ---------- */
+      var barVal=document.getElementById("barVal"), chordVal=document.getElementById("chordVal");
+      var sfxFlag=document.getElementById("sfxFlag");
+      var rafID=null, lastStep=-1;
+      function draw(){
+        if(!state.playing) return;
+        var elapsed=(ctx.currentTime-firstTime)%LOOP_DUR; if(elapsed<0) elapsed+=LOOP_DUR;
+        var stepF=elapsed/EIGHTH, step=Math.floor(stepF)%64;
+        playhead.style.display="block";
+        playhead.style.left=(stepF/64*100)+"%";
+        if(step!==lastStep){
+          lastStep=step;
+          var bar=Math.floor(step/8);
+          barVal.textContent=(bar+1)+" / 8";
+          chordVal.textContent=CHORDS[bar];
+          barLabels.forEach(function(el,i){ el.classList.toggle("cur",i===bar); });
+          progChips.forEach(function(el,i){ el.classList.toggle("cur",i===bar); });
+          sfxFlag.classList.toggle("on", state.sfx && (step%16===8||step%16===9||step%16===10));
+          // highlight sounding notes
+          [[melTrack,2],[arpTrack,1],[bassTrack,4],[noiTrack,1]].forEach(function(pair){
+            pair[0].querySelectorAll(".note").forEach(function(el){
+              var s=parseInt(el.dataset.step,10);
+              el.classList.toggle("playing", step>=s && step<s+pair[1]);
+            });
+          });
+        }
+        rafID=requestAnimationFrame(draw);
+      }
+
+      /* ---------- controls ---------- */
+      var playBtn=document.getElementById("playBtn");
+      function setPressed(btn,on,label){
+        btn.setAttribute("aria-pressed",on?"true":"false");
+        btn.querySelector("[data-state]").textContent=label;
+      }
+      function start(){
+        ensureCtx();
+        if(ctx.state==="suspended") ctx.resume();
+        state.playing=true;
+        nextStep=0; firstTime=ctx.currentTime+0.06; nextTime=firstTime; lastStep=-1;
+        playhead.style.display="block";
+        timerID=setInterval(scheduler,25); scheduler();
+        playBtn.textContent="■ 停止";
+        draw();
+      }
+      function stop(){
+        state.playing=false;
+        if(timerID) clearInterval(timerID); timerID=null;
+        if(rafID) cancelAnimationFrame(rafID); rafID=null;
+        playBtn.textContent="▶ 再生";
+        playhead.style.display="none";
+        barVal.textContent="– / 8"; chordVal.textContent="–";
+        sfxFlag.classList.remove("on");
+        barLabels.forEach(function(el){el.classList.remove("cur");});
+        progChips.forEach(function(el){el.classList.remove("cur");});
+        lanesEl.querySelectorAll(".note.playing").forEach(function(el){el.classList.remove("playing");});
+      }
+      playBtn.addEventListener("click",function(){ state.playing?stop():start(); });
+
+      function bindToggle(id,key,labels,onChange){
+        var btn=document.getElementById(id);
+        btn.addEventListener("click",function(){
+          state[key]=!state[key];
+          setPressed(btn,state[key], state[key]?labels[0]:labels[1]);
+          if(onChange) onChange();
+        });
+      }
+      bindToggle("ctlArp","arp",["ON","OFF"],refreshLaneStates);
+      bindToggle("ctlSfx","sfx",["ON","OFF"],refreshLaneStates);
+      bindToggle("ctlStereo","stereo",["ON","OFF"],function(){ if(ctx) applyPans(); });
+      bindToggle("ctlBass","bassGB",["GB波形","FC三角波"],refreshLaneStates);
+      bindToggle("ctlNoise","noise",["ON","OFF"],refreshLaneStates);
+      refreshLaneStates();
+    })();
+    </script>
+  </body>
+</html>

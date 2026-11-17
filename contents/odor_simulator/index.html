@@ -1,0 +1,626 @@
+<!doctype html>
+<html lang="ja">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="color-scheme" content="light dark" />
+    <link rel="icon" href="data:," />
+    <title>臭いの上昇気流シミュレーター</title>
+    <style>
+      button, [role="button"], select, summary, input:not([type="checkbox"], [type="radio"]) { min-height: 2.25rem; }
+      * { box-sizing: border-box; }
+      :root {
+        --bg: #faf6ef;
+        --surface: #ffffff;
+        --surface2: #f3ecdd;
+        --ink: #2b2118;
+        --ink-soft: #6b5d4f;
+        --line: #e2d7c3;
+        --accent: #c2571b;
+        --accent-soft: #f6e3d3;
+        --good: #3d7a44;
+        --bad: #b3372a;
+        --meter-bg: #ece2cd;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --bg: #1c1712;
+          --surface: #292019;
+          --surface2: #332920;
+          --ink: #f0e7d8;
+          --ink-soft: #b8a78f;
+          --line: #453729;
+          --accent: #e07f3e;
+          --accent-soft: #453122;
+          --good: #7cc487;
+          --bad: #e88a7d;
+          --meter-bg: #3a2f22;
+        }
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--ink);
+        font-family: "Hiragino Kaku Gothic ProN", "Hiragino Sans", "Yu Gothic UI", "Yu Gothic", "Noto Sans JP", sans-serif;
+        line-height: 1.7;
+      }
+      .wrap { max-width: 880px; margin: 0 auto; padding: 20px 16px 48px; }
+      h1 { font-size: 1.55rem; line-height: 1.35; margin: 4px 0 6px; letter-spacing: .01em; }
+      .lead { color: var(--ink-soft); margin: 0 0 18px; font-size: .98rem; }
+      .lead strong { color: var(--ink); }
+      .stage-card {
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        padding: 10px;
+        box-shadow: 0 2px 10px rgba(60, 40, 10, .06);
+      }
+      canvas { display: block; width: 100%; height: auto; border-radius: 8px; }
+      .meter-row {
+        display: flex; align-items: center; gap: 12px;
+        margin-top: 12px; flex-wrap: wrap;
+      }
+      .meter-label { font-weight: 700; font-size: .95rem; white-space: nowrap; }
+      .meter {
+        flex: 1 1 180px; height: 18px; border-radius: 999px;
+        background: var(--meter-bg); overflow: hidden;
+      }
+      .meter-fill {
+        height: 100%; width: 0%;
+        background: linear-gradient(90deg, #d9a03c, #c2571b, #8f2d1d);
+        border-radius: 999px;
+        transition: width .25s ease;
+      }
+      .meter-verdict { font-weight: 700; font-size: 1rem; min-width: 7.5em; }
+      .controls {
+        display: grid; grid-template-columns: 1fr 1fr; gap: 14px 22px;
+        margin-top: 18px;
+        background: var(--surface);
+        border: 1px solid var(--line);
+        border-radius: 14px;
+        padding: 18px;
+      }
+      @media (max-width: 620px) { .controls { grid-template-columns: 1fr; } }
+      .ctl label { display: flex; justify-content: space-between; align-items: baseline; font-weight: 700; font-size: .95rem; margin-bottom: 2px; }
+      .ctl .val { color: var(--accent); font-variant-numeric: tabular-nums; font-size: .92rem; }
+      .ctl .hint { color: var(--ink-soft); font-size: .82rem; margin: 2px 0 0; }
+      input[type="range"] { width: 100%; accent-color: var(--accent); min-height: 2.25rem; }
+      .btn-row { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; }
+      button {
+        font: inherit; font-weight: 700; cursor: pointer;
+        border-radius: 10px; padding: 8px 18px;
+        border: 1px solid var(--line);
+        background: var(--surface2); color: var(--ink);
+      }
+      button.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
+      button[aria-pressed="true"] { background: var(--accent); border-color: var(--accent); color: #fff; }
+      section { margin-top: 34px; }
+      h2 { font-size: 1.2rem; margin: 0 0 10px; border-bottom: 2px solid var(--accent-soft); padding-bottom: 6px; }
+      .steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+      @media (max-width: 620px) { .steps { grid-template-columns: 1fr; } }
+      .step {
+        background: var(--surface); border: 1px solid var(--line);
+        border-radius: 12px; padding: 14px 16px;
+      }
+      .step .num {
+        display: inline-block; font-weight: 800; color: var(--accent);
+        font-size: 1.3rem; line-height: 1; margin-bottom: 6px;
+      }
+      .step h3 { margin: 0 0 6px; font-size: 1rem; }
+      .step p { margin: 0; font-size: .9rem; color: var(--ink-soft); }
+      .myth {
+        background: var(--surface); border: 1px solid var(--line);
+        border-radius: 12px; padding: 16px 18px; margin-top: 12px;
+      }
+      .myth h3 { margin: 0 0 6px; font-size: 1rem; }
+      .myth p { margin: 0; font-size: .93rem; }
+      .try { margin: 0; padding-left: 1.3em; font-size: .95rem; }
+      .try li { margin: 6px 0; }
+      footer { margin-top: 36px; color: var(--ink-soft); font-size: .82rem; }
+    </style>
+  </head>
+  <body>
+    <div class="wrap">
+      <h1>臭いの上昇気流シミュレーター</h1>
+      <p class="lead">「うんこの臭いは上昇気流で鼻に届く」——ほんまか？を目で見る道具。<strong>茶色い粒＝臭いの分子</strong>。出たてホヤホヤの周りの空気は体温で温められて軽くなり、上へ上へと昇っていく。臭いの粒はその流れに乗っかって運ばれ、鼻の高さまで来たらアウトや。</p>
+
+      <div class="stage-card">
+        <canvas id="stage" width="840" height="520" aria-label="臭いの粒子が上昇気流に乗って鼻へ届くシミュレーション"></canvas>
+        <div class="meter-row">
+          <span class="meter-label">鼻の受難度</span>
+          <div class="meter" role="img" aria-label="鼻に届いた臭いの強さ"><div class="meter-fill" id="meterFill"></div></div>
+          <span class="meter-verdict" id="verdict">まだ平和</span>
+        </div>
+      </div>
+
+      <div class="controls">
+        <div class="ctl">
+          <label for="temp">出たての温かさ（室温との差）<span class="val" id="tempVal">+12℃</span></label>
+          <input type="range" id="temp" min="0" max="20" step="1" value="12" />
+          <p class="hint">差が大きいほど空気が軽くなり、上昇気流が速くなる。冷めると昇らん。</p>
+        </div>
+        <div class="ctl">
+          <label for="strength">臭いの濃さ<span class="val" id="strengthVal">ふつう</span></label>
+          <input type="range" id="strength" min="1" max="3" step="1" value="2" />
+          <p class="hint">1分あたりに出てくる臭い粒の量。濃いほど鼻に当たる確率が上がる。</p>
+        </div>
+        <div class="ctl">
+          <label for="wind">横風（窓・扇風機）<span class="val" id="windVal">そよ風</span></label>
+          <input type="range" id="wind" min="-3" max="3" step="1" value="0" />
+          <p class="hint">左が「窓から人へ」、右が「人から窓へ」。流れが横にそれると鼻をかすめる。</p>
+        </div>
+        <div class="ctl">
+          <label for="nose">鼻の高さ<span class="val" id="noseVal">立ってる</span></label>
+          <input type="range" id="nose" min="0" max="2" step="1" value="2" />
+          <p class="hint">立ってる／座ってる／しゃがんでる。上昇気流の通り道に鼻があるかどうかが勝負。</p>
+        </div>
+      </div>
+
+      <div class="btn-row">
+        <button type="button" id="fanBtn" aria-pressed="false">換気扇をつける</button>
+        <button type="button" id="pauseBtn">一時停止</button>
+        <button type="button" id="resetBtn">リセット</button>
+      </div>
+
+      <section>
+        <h2>なんで鼻に届くのか：3ステップ</h2>
+        <div class="steps">
+          <div class="step">
+            <span class="num">1</span>
+            <h3>温かい空気は軽い</h3>
+            <p>出たては体温（約36℃）に近い。周りの空気より温かい空気は膨らんで密度が下がり、浮力で上へ昇る。これが上昇気流（対流）の正体。</p>
+          </div>
+          <div class="step">
+            <span class="num">2</span>
+            <h3>臭いは「空気の荷物」</h3>
+            <p>臭いの分子は自分で昇ってるんやない。昇る空気に乗せられて運ばれる。あわせて分子が勝手に広がる「拡散」も少し手伝うけど、主役は対流。</p>
+          </div>
+          <div class="step">
+            <span class="num">3</span>
+            <h3>鼻が吸い込んで捕まえる</h3>
+            <p>気流が鼻の高さまで届くと、呼吸の吸い込みで分子が鼻の奥の嗅覚受容体にくっつく。脳が「臭い」と判定して終了。換気扇や横風は、この配達ルートを断ち切る係。</p>
+          </div>
+        </div>
+        <div class="myth">
+          <h3>誤解ポイント：臭い分子が「軽いから昇る」は嘘</h3>
+          <p>うんこの臭いの主成分のひとつ硫化水素は、実は空気より少し重い。スカトールやインドールも同様。それでも臭いが上へ来るのは、分子の軽さやなく<strong>温かい空気の流れが全部まとめて運んでいく</strong>から。冷めた臭いは昇らず、足元に漂う。冬のトイレで「なんか下のほうが臭い」気がするのはこのせいや。</p>
+        </div>
+      </section>
+
+      <section>
+        <h2>試してほしいこと</h2>
+        <ul class="try">
+          <li><strong>温かさを0℃に</strong>：上昇気流が死んで、粒がその場でモヤモヤするだけになる。鼻は平和。</li>
+          <li><strong>換気扇ON</strong>：粒が天井の換気扇へ吸われて、鼻への配達が激減する。トイレの換気扇は伊達やない。</li>
+          <li><strong>横風を「人から窓へ」最大</strong>：気流が鼻から遠ざかって助かる。逆向きは地獄。</li>
+          <li><strong>鼻の高さを「しゃがんでる」に</strong>：上昇気流の通り道から外れて意外と平和。……現実でやるかは別問題。</li>
+        </ul>
+      </section>
+
+      <footer>このシミュレーションは仕組みを掴むための模式図です。粒の動きは対流・拡散・横風を単純化したもので、実際の速度や濃度を再現するものではありません。</footer>
+    </div>
+
+    <script>
+      (function () {
+        var canvas = document.getElementById('stage');
+        var ctx = canvas.getContext('2d');
+        var W = canvas.width, H = canvas.height;
+
+        var tempEl = document.getElementById('temp');
+        var strengthEl = document.getElementById('strength');
+        var windEl = document.getElementById('wind');
+        var noseEl = document.getElementById('nose');
+        var tempVal = document.getElementById('tempVal');
+        var strengthVal = document.getElementById('strengthVal');
+        var windVal = document.getElementById('windVal');
+        var noseVal = document.getElementById('noseVal');
+        var meterFill = document.getElementById('meterFill');
+        var verdictEl = document.getElementById('verdict');
+        var fanBtn = document.getElementById('fanBtn');
+        var pauseBtn = document.getElementById('pauseBtn');
+        var resetBtn = document.getElementById('resetBtn');
+
+        var floorY = H - 56;
+        var source = { x: 210, y: floorY - 58 }; // うんこの位置
+        var vent = { x: 66, y: 42 };             // 換気扇（窓の近く・人の反対側）
+        var fanOn = false;
+        var running = true;
+        var smell = 0; // 0..100
+        var particles = [];
+        var t = 0;
+
+        var noseHeights = [
+          { label: 'しゃがんでる', y: floorY - 92 },
+          { label: '座ってる', y: floorY - 168 },
+          { label: '立ってる', y: floorY - 262 }
+        ];
+        var strengthLabels = ['', 'うすい', 'ふつう', '濃い'];
+        function windLabel(v) {
+          if (v === 0) return '無風';
+          if (v < 0) return v <= -2 ? '窓から人へ 強' : '窓から人へ';
+          return v >= 2 ? '人から窓へ 強' : '人から窓へ';
+        }
+
+        function nosePos() {
+          var h = noseHeights[parseInt(noseEl.value, 10)];
+          return { x: 640, y: h.y };
+        }
+
+        function syncLabels() {
+          tempVal.textContent = '+' + tempEl.value + '℃';
+          strengthVal.textContent = strengthLabels[parseInt(strengthEl.value, 10)];
+          windVal.textContent = windLabel(parseInt(windEl.value, 10));
+          noseVal.textContent = noseHeights[parseInt(noseEl.value, 10)].label;
+        }
+        [tempEl, strengthEl, windEl, noseEl].forEach(function (el) {
+          el.addEventListener('input', syncLabels);
+        });
+        syncLabels();
+
+        fanBtn.addEventListener('click', function () {
+          fanOn = !fanOn;
+          fanBtn.setAttribute('aria-pressed', String(fanOn));
+          fanBtn.textContent = fanOn ? '換気扇を止める' : '換気扇をつける';
+        });
+        pauseBtn.addEventListener('click', function () {
+          running = !running;
+          pauseBtn.textContent = running ? '一時停止' : '再開';
+          if (running) requestAnimationFrame(frame);
+        });
+        resetBtn.addEventListener('click', function () {
+          particles = [];
+          smell = 0;
+        });
+
+        function spawn() {
+          var temp = parseInt(tempEl.value, 10);
+          var n = parseInt(strengthEl.value, 10);
+          var count = temp > 0 ? n : Math.max(1, n - 1);
+          for (var i = 0; i < count; i++) {
+            if (particles.length > 420) return;
+            particles.push({
+              x: source.x + (Math.random() - 0.5) * 26,
+              y: source.y - 4 + (Math.random() - 0.5) * 6,
+              vx: 0, vy: 0,
+              r: 2.4 + Math.random() * 2.6,
+              life: 0,
+              heat: 1,
+              seed: Math.random() * Math.PI * 2
+            });
+          }
+        }
+
+        function step() {
+          t += 1;
+          if (t % 6 === 0) spawn();
+          var temp = parseInt(tempEl.value, 10);
+          var wind = parseInt(windEl.value, 10);
+          var nose = nosePos();
+          var rise = temp * 0.11; // 上昇気流の強さ
+          var hits = 0;
+
+          for (var i = particles.length - 1; i >= 0; i--) {
+            var p = particles[i];
+            p.life += 1;
+            p.heat = Math.max(0, p.heat - 0.0012); // だんだん冷める
+
+            // 浮力：温かい間だけ昇る。冷めたらゆっくり沈む（対流の循環）
+            var buoy = rise * p.heat * (0.55 + 0.45 * Math.sin(p.seed + p.life * 0.05));
+            var targetVy = p.heat > 0.22 ? -buoy : 0.34;
+            // 部屋全体の対流セル：天井を伝って横へ流れ、壁際で降りてくる
+            if (temp > 0) {
+              var tf = Math.min(1.4, temp / 12);
+              if (p.y < 110) p.vx += (p.x >= source.x ? 1 : -1) * 0.045 * tf;
+              if (p.x > W * 0.58 && p.y >= 50 && p.heat < 0.75) targetVy = Math.max(targetVy, 0.5 * tf);
+              if (p.x < W * 0.14 && p.y >= 50 && p.heat < 0.75) targetVy = Math.max(targetVy, 0.4 * tf);
+            }
+            p.vy += (targetVy - p.vy) * 0.05;
+            // ゆらぎ（乱流っぽい横揺れ）：高く昇るほどプルームは広がる
+            var spread = 1 + Math.max(0, source.y - p.y) / 160;
+            p.vx += Math.sin(p.life * 0.07 + p.seed) * 0.05 * spread;
+            // 横風（負の値＝窓から人へ＝右向き、正の値＝人から窓へ＝左向き）
+            p.vx += (-wind * 0.55 - p.vx) * 0.012;
+            // 天井にぶつかったら横へ広がる（天井ジェット）
+            if (p.y < 34) {
+              var dir = p.x >= source.x ? 1 : -1;
+              p.vx += dir * 0.09;
+              p.vy += (0 - p.vy) * 0.2;
+            }
+            // 拡散：ランダムなふらつき。広がりは時間とともに大きく
+            var diff = 0.6 + p.life * 0.002;
+            p.x += (Math.random() - 0.5) * diff;
+            p.y += (Math.random() - 0.5) * diff * 0.7;
+
+            if (fanOn) {
+              var dxv = vent.x - p.x, dyv = vent.y - p.y;
+              var dv = Math.sqrt(dxv * dxv + dyv * dyv) || 1;
+              var pull = Math.max(0, 1 - dv / 620) * 1.15;
+              p.vx += (dxv / dv) * pull * 0.09;
+              p.vy += (dyv / dv) * pull * 0.09;
+              if (dv < 26) { particles.splice(i, 1); continue; }
+            }
+
+            // 鼻の吸い込み：近くまで来た粒は呼吸で引き寄せられる
+            var sdx = nose.x - p.x, sdy = nose.y - p.y;
+            var sd = Math.sqrt(sdx * sdx + sdy * sdy) || 1;
+            if (!fanOn && sd < 120) {
+              var suck = (1 - sd / 120) * 0.14;
+              p.vx += (sdx / sd) * suck;
+              p.vy += (sdy / sd) * suck;
+            }
+
+            p.x += p.vx;
+            p.y += p.vy;
+
+            // 天井・壁で止める
+            if (p.y < 14) { p.y = 14; p.vy = Math.abs(p.vy) * 0.2; }
+            if (p.x < 10) { p.x = 10; p.vx = 0; }
+            if (p.x > W - 10) { p.x = W - 10; p.vx = 0; }
+            // 床まで沈んだら消える
+            if (p.y > floorY - 2) { particles.splice(i, 1); continue; }
+
+            // 鼻に届いた？
+            var dxn = nose.x - p.x, dyn = nose.y - p.y;
+            if (dxn * dxn + dyn * dyn < 36 * 36) {
+              hits += 1;
+              particles.splice(i, 1);
+              continue;
+            }
+            // 寿命：薄まって消える
+            if (p.life > 1200) particles.splice(i, 1);
+          }
+
+          smell = Math.min(100, smell + hits * 12);
+          smell = Math.max(0, smell - 0.16);
+          meterFill.style.width = smell.toFixed(0) + '%';
+          verdictEl.textContent =
+            smell < 12 ? 'まだ平和' :
+            smell < 38 ? '…ん？ なんか臭う' :
+            smell < 68 ? 'くさっ！' :
+            smell < 90 ? 'うっ、直撃や…' : '悶絶レベル';
+          verdictEl.style.color = smell < 38 ? 'var(--good)' : 'var(--bad)';
+        }
+
+        function draw() {
+          var dark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+          var wall = dark ? '#241c14' : '#fdfaf3';
+          var floorC = dark ? '#171208' : '#e9dfc9';
+          ctx.clearRect(0, 0, W, H);
+          ctx.fillStyle = wall;
+          ctx.fillRect(0, 0, W, H);
+
+          // 床
+          ctx.fillStyle = floorC;
+          ctx.fillRect(0, floorY, W, H - floorY);
+
+          // 窓（左）
+          ctx.strokeStyle = dark ? '#6b5638' : '#a98f5f';
+          ctx.lineWidth = 3;
+          ctx.strokeRect(28, 88, 74, 104);
+          ctx.beginPath();
+          ctx.moveTo(65, 88); ctx.lineTo(65, 192);
+          ctx.moveTo(28, 140); ctx.lineTo(102, 140);
+          ctx.stroke();
+          ctx.fillStyle = dark ? '#8fa3b8' : '#5b7d99';
+          ctx.font = '12px sans-serif';
+          ctx.fillText('窓', 56, 212);
+
+          // 横風の矢印
+          var wind = parseInt(windEl.value, 10);
+          if (wind !== 0) {
+            ctx.strokeStyle = dark ? '#7fb2d9' : '#3f7fb5';
+            ctx.fillStyle = ctx.strokeStyle;
+            ctx.lineWidth = 2;
+            var dir = wind < 0 ? 1 : -1;
+            for (var r = 0; r < 3; r++) {
+              var ay = 96 + r * 34;
+              var ax = dir > 0 ? 118 : W - 190;
+              ctx.beginPath();
+              ctx.moveTo(ax, ay);
+              ctx.lineTo(ax + dir * 52, ay);
+              ctx.stroke();
+              ctx.beginPath();
+              ctx.moveTo(ax + dir * 62, ay);
+              ctx.lineTo(ax + dir * 48, ay - 5);
+              ctx.lineTo(ax + dir * 48, ay + 5);
+              ctx.closePath();
+              ctx.fill();
+            }
+          }
+
+          // 換気扇（左上・窓の近く）
+          ctx.strokeStyle = dark ? '#6b5638' : '#a98f5f';
+          ctx.lineWidth = 3;
+          ctx.strokeRect(vent.x - 30, vent.y - 30, 60, 60);
+          ctx.save();
+          ctx.translate(vent.x, vent.y);
+          if (fanOn) ctx.rotate(t * 0.35);
+          ctx.fillStyle = fanOn ? (dark ? '#d9c9a8' : '#8a6f45') : (dark ? '#5a4a33' : '#b7a37c');
+          for (var b = 0; b < 3; b++) {
+            ctx.rotate((Math.PI * 2) / 3);
+            ctx.beginPath();
+            ctx.ellipse(0, -13, 7, 14, 0, 0, Math.PI * 2);
+            ctx.fill();
+          }
+          ctx.restore();
+          ctx.fillStyle = dark ? '#8fa3b8' : '#5b7d99';
+          ctx.font = '12px sans-serif';
+          ctx.fillText('換気扇', vent.x + 38, vent.y + 5);
+
+          // 上昇気流の湯気ライン（温かいときだけ）
+          var temp = parseInt(tempEl.value, 10);
+          if (temp > 0) {
+            ctx.strokeStyle = dark ? 'rgba(224,127,62,0.5)' : 'rgba(194,87,27,0.4)';
+            ctx.lineWidth = 2;
+            for (var s = 0; s < 3; s++) {
+              ctx.beginPath();
+              var bx = source.x - 18 + s * 18;
+              var amp = 4 + temp * 0.25;
+              for (var yy = 0; yy <= 120; yy += 8) {
+                var xx = bx + Math.sin(yy * 0.05 + t * 0.09 + s * 2) * amp;
+                var py = source.y - 16 - yy;
+                if (yy === 0) ctx.moveTo(xx, py); else ctx.lineTo(xx, py);
+              }
+              ctx.stroke();
+            }
+          }
+
+          // 便器
+          ctx.fillStyle = dark ? '#3d4a55' : '#b9cdd8';
+          ctx.beginPath();
+          ctx.moveTo(source.x - 62, floorY);
+          ctx.lineTo(source.x - 62, floorY - 44);
+          ctx.quadraticCurveTo(source.x - 62, floorY - 66, source.x - 34, floorY - 66);
+          ctx.lineTo(source.x + 40, floorY - 66);
+          ctx.quadraticCurveTo(source.x + 58, floorY - 66, source.x + 52, floorY - 40);
+          ctx.lineTo(source.x + 44, floorY);
+          ctx.closePath();
+          ctx.fill();
+          ctx.fillStyle = dark ? '#54646f' : '#d7e5ec';
+          ctx.beginPath();
+          ctx.ellipse(source.x - 4, floorY - 66, 52, 10, 0, 0, Math.PI * 2);
+          ctx.fill();
+          // タンク
+          ctx.fillStyle = dark ? '#3d4a55' : '#b9cdd8';
+          ctx.fillRect(source.x - 96, floorY - 128, 34, 66);
+
+          // うんこ本体
+          ctx.fillStyle = '#7a4a21';
+          ctx.beginPath();
+          ctx.ellipse(source.x, source.y + 6, 26, 10, 0, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.beginPath();
+          ctx.ellipse(source.x, source.y - 2, 18, 9, 0, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.beginPath();
+          ctx.ellipse(source.x + 1, source.y - 10, 10, 8, 0, 0, Math.PI * 2);
+          ctx.fill();
+          ctx.beginPath();
+          ctx.moveTo(source.x + 1, source.y - 24);
+          ctx.quadraticCurveTo(source.x + 8, source.y - 14, source.x + 2, source.y - 13);
+          ctx.quadraticCurveTo(source.x - 4, source.y - 15, source.x + 1, source.y - 24);
+          ctx.fill();
+
+          // 人（右側）
+          var nose = nosePos();
+          var personX = nose.x + 26;
+          var headR = 26;
+          var headY = nose.y + 14;
+          ctx.strokeStyle = dark ? '#e8dcc4' : '#4a3a28';
+          ctx.fillStyle = dark ? '#e8dcc4' : '#4a3a28';
+          ctx.lineWidth = 4;
+          ctx.lineCap = 'round';
+          // 体
+          ctx.beginPath();
+          ctx.moveTo(personX, headY + headR);
+          ctx.lineTo(personX, floorY - 78);
+          ctx.stroke();
+          // 脚
+          ctx.beginPath();
+          ctx.moveTo(personX, floorY - 78);
+          ctx.lineTo(personX - 20, floorY);
+          ctx.moveTo(personX, floorY - 78);
+          ctx.lineTo(personX + 22, floorY);
+          ctx.stroke();
+          // 腕
+          ctx.beginPath();
+          ctx.moveTo(personX, headY + headR + 26);
+          ctx.lineTo(personX - 26, headY + headR + 58);
+          ctx.stroke();
+          // 頭
+          ctx.beginPath();
+          ctx.arc(personX, headY, headR, 0, Math.PI * 2);
+          ctx.fillStyle = dark ? '#f2e3c2' : '#f6d9ae';
+          ctx.fill();
+          ctx.lineWidth = 2.5;
+          ctx.strokeStyle = dark ? '#8a764f' : '#8a6f45';
+          ctx.stroke();
+          // 鼻（左向きに突き出す）
+          ctx.fillStyle = dark ? '#f2e3c2' : '#f6d9ae';
+          ctx.beginPath();
+          ctx.moveTo(personX - headR + 4, headY + 2);
+          ctx.lineTo(nose.x - 6, nose.y);
+          ctx.lineTo(personX - headR + 6, headY + 12);
+          ctx.closePath();
+          ctx.fill();
+          ctx.stroke();
+          // 鼻の先マーカー
+          ctx.fillStyle = '#c2571b';
+          ctx.beginPath();
+          ctx.arc(nose.x, nose.y, 4, 0, Math.PI * 2);
+          ctx.fill();
+          // 目と口：受難度で表情が変わる
+          ctx.strokeStyle = dark ? '#4a3a28' : '#4a3a28';
+          ctx.lineWidth = 2;
+          var ex = personX - 8, ey = headY - 4;
+          if (smell < 38) {
+            ctx.fillStyle = '#4a3a28';
+            ctx.beginPath(); ctx.arc(ex, ey, 2.4, 0, Math.PI * 2); ctx.fill();
+            ctx.beginPath();
+            ctx.arc(personX - 2, headY + 12, 6, 0.15 * Math.PI, 0.85 * Math.PI);
+            ctx.stroke();
+          } else if (smell < 68) {
+            ctx.beginPath();
+            ctx.moveTo(ex - 4, ey - 3); ctx.lineTo(ex + 4, ey + 3);
+            ctx.moveTo(ex - 4, ey + 3); ctx.lineTo(ex + 4, ey - 3);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.moveTo(personX - 8, headY + 15); ctx.lineTo(personX + 4, headY + 15);
+            ctx.stroke();
+          } else {
+            ctx.beginPath();
+            ctx.moveTo(ex - 4, ey - 3); ctx.lineTo(ex + 4, ey + 3);
+            ctx.moveTo(ex - 4, ey + 3); ctx.lineTo(ex + 4, ey - 3);
+            ctx.stroke();
+            ctx.beginPath();
+            ctx.arc(personX - 2, headY + 15, 5, 0, Math.PI * 2);
+            ctx.stroke();
+            // 汗
+            ctx.fillStyle = '#3f7fb5';
+            ctx.beginPath();
+            ctx.ellipse(personX + headR + 2, headY - 8, 3, 5, 0.4, 0, Math.PI * 2);
+            ctx.fill();
+          }
+          ctx.fillStyle = dark ? '#8fa3b8' : '#5b7d99';
+          ctx.font = '12px sans-serif';
+          ctx.fillText('鼻', nose.x - 6, nose.y - 14);
+
+          // 臭い粒子
+          for (var i = 0; i < particles.length; i++) {
+            var p = particles[i];
+            var fade = Math.max(0.25, 1 - p.life / 1300);
+            ctx.fillStyle = 'rgba(140, 82, 30,' + (0.85 * fade).toFixed(2) + ')';
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, p.r, 0, Math.PI * 2);
+            ctx.fill();
+          }
+
+          // 一時停止表示
+          if (!running) {
+            ctx.fillStyle = dark ? 'rgba(240,231,216,0.85)' : 'rgba(43,33,24,0.75)';
+            ctx.font = 'bold 20px sans-serif';
+            ctx.textAlign = 'center';
+            ctx.fillText('一時停止中', W / 2, 40);
+            ctx.textAlign = 'left';
+          }
+        }
+
+        var reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        function frame() {
+          step();
+          draw();
+          if (running) requestAnimationFrame(frame);
+        }
+        if (reduceMotion) {
+          // 動きを抑える設定では数フレームだけ描いて止める
+          for (var k = 0; k < 30; k++) step();
+          draw();
+          running = false;
+          pauseBtn.textContent = '動かす';
+        } else {
+          requestAnimationFrame(frame);
+        }
+      })();
+    </script>
+  </body>
+</html>

@@ -55,7 +55,7 @@
         padding: 10px;
         box-shadow: 0 2px 10px rgba(60, 40, 10, .06);
       }
-      canvas { display: block; width: 100%; height: auto; border-radius: 8px; }
+      canvas { display: block; width: 100%; height: auto; border-radius: 8px; touch-action: pan-y; cursor: grab; }
       .meter-row {
         display: flex; align-items: center; gap: 12px;
         margin-top: 12px; flex-wrap: wrap;
@@ -122,7 +122,7 @@
   <body>
     <div class="wrap">
       <h1>臭いの上昇気流シミュレーター</h1>
-      <p class="lead">「うんこの臭いは上昇気流で鼻に届く」——ほんまか？を目で見る道具。<strong>茶色い粒＝臭いの分子</strong>。出たてホヤホヤの周りの空気は体温で温められて軽くなり、上へ上へと昇っていく。臭いの粒はその流れに乗っかって運ばれ、鼻の高さまで来たらアウトや。</p>
+      <p class="lead">「うんこの臭いは上昇気流で鼻に届く」——ほんまか？を目で見る道具。<strong>茶色い粒＝臭いの分子</strong>。配達するのは出たての熱やなくて<strong>自分の体温</strong>や。体が温めた空気は体に沿って昇り、足元の空気を巻き込んでいく。その流れが臭いの粒を拾い上げて、鼻まで運んでしまう。人はドラッグで動かせて、ボタンで消すこともできる。</p>
 
       <div class="stage-card">
         <canvas id="stage" width="840" height="520" aria-label="臭いの粒子が上昇気流に乗って鼻へ届くシミュレーション"></canvas>
@@ -135,9 +135,9 @@
 
       <div class="controls">
         <div class="ctl">
-          <label for="temp">出たての温かさ（室温との差）<span class="val" id="tempVal">+12℃</span></label>
+          <label for="temp">体温と室温の差<span class="val" id="tempVal">+12℃</span></label>
           <input type="range" id="temp" min="0" max="20" step="1" value="12" />
-          <p class="hint">差が大きいほど空気が軽くなり、上昇気流が速くなる。冷めると昇らん。</p>
+          <p class="hint">差が大きいほど、体の周りを昇る気流（サーマルプルーム）が強くなる。室温が体温に近づくと昇らん。</p>
         </div>
         <div class="ctl">
           <label for="strength">臭いの濃さ<span class="val" id="strengthVal">ふつう</span></label>
@@ -152,11 +152,12 @@
         <div class="ctl">
           <label for="nose">鼻の高さ<span class="val" id="noseVal">立ってる</span></label>
           <input type="range" id="nose" min="0" max="2" step="1" value="2" />
-          <p class="hint">立ってる／座ってる／しゃがんでる。上昇気流の通り道に鼻があるかどうかが勝負。</p>
+          <p class="hint">立ってる／座ってる／しゃがんでる。人はキャンバス上でドラッグして左右に動かせる。</p>
         </div>
       </div>
 
       <div class="btn-row">
+        <button type="button" id="personBtn" aria-pressed="true">人を消す</button>
         <button type="button" id="fanBtn" aria-pressed="false">換気扇をつける</button>
         <button type="button" id="pauseBtn">一時停止</button>
         <button type="button" id="resetBtn">リセット</button>
@@ -167,13 +168,13 @@
         <div class="steps">
           <div class="step">
             <span class="num">1</span>
-            <h3>温かい空気は軽い</h3>
-            <p>出たては体温（約36℃）に近い。周りの空気より温かい空気は膨らんで密度が下がり、浮力で上へ昇る。これが上昇気流（対流）の正体。</p>
+            <h3>体温が上昇気流を作る</h3>
+            <p>体は約36℃で、周りの空気を温めて軽くする。温まった空気は体に沿って上へ昇る。これがサーマルプルームで、人は常に自分専用の上昇気流をまとっとる。</p>
           </div>
           <div class="step">
             <span class="num">2</span>
             <h3>臭いは「空気の荷物」</h3>
-            <p>臭いの分子は自分で昇ってるんやない。昇る空気に乗せられて運ばれる。あわせて分子が勝手に広がる「拡散」も少し手伝うけど、主役は対流。</p>
+            <p>臭いの分子は自分では昇れへん。足元に漂う粒は、プルームが周りの空気を巻き込む時に拾われて、体に沿って上へ運ばれる。分子が勝手に広がる「拡散」も少し手伝うけど、主役は体温の対流。</p>
           </div>
           <div class="step">
             <span class="num">3</span>
@@ -183,17 +184,17 @@
         </div>
         <div class="myth">
           <h3>誤解ポイント：臭い分子が「軽いから昇る」は嘘</h3>
-          <p>うんこの臭いの主成分のひとつ硫化水素は、実は空気より少し重い。スカトールやインドールも同様。それでも臭いが上へ来るのは、分子の軽さやなく<strong>温かい空気の流れが全部まとめて運んでいく</strong>から。冷めた臭いは昇らず、足元に漂う。冬のトイレで「なんか下のほうが臭い」気がするのはこのせいや。</p>
+          <p>うんこの臭いの主成分のひとつ硫化水素は、実は空気より少し重い。スカトールやインドールも同様。それでも臭いが上へ来るのは、分子の軽さやなく<strong>温かい空気の流れが全部まとめて運んでいく</strong>から。冷めた臭いは自分では昇らず足元に漂うけど、近くに人が立つと、その人の体温プルームが足元の空気を巻き込んで上まで運んでしまう。</p>
         </div>
       </section>
 
       <section>
         <h2>試してほしいこと</h2>
         <ul class="try">
-          <li><strong>温かさを0℃に</strong>：上昇気流が死んで、粒がその場でモヤモヤするだけになる。鼻は平和。</li>
+          <li><strong>体温との差を0℃に</strong>：プルームが死んで、粒が足元でモヤモヤするだけになる。鼻は平和。</li>
+          <li><strong>人をドラッグで遠ざける</strong>：プルームが拾う粒が薄まって、届く量が減る。距離は正義。</li>
           <li><strong>換気扇ON</strong>：粒が天井の換気扇へ吸われて、鼻への配達が激減する。トイレの換気扇は伊達やない。</li>
-          <li><strong>横風を「人から窓へ」最大</strong>：気流が鼻から遠ざかって助かる。逆向きは地獄。</li>
-          <li><strong>鼻の高さを「しゃがんでる」に</strong>：上昇気流の通り道から外れて意外と平和。……現実でやるかは別問題。</li>
+          <li><strong>人を消す</strong>：最終手段。センサーごと消えるから絶対に臭わん。……現実でやるかは別問題。</li>
         </ul>
       </section>
 
@@ -216,6 +217,7 @@
         var noseVal = document.getElementById('noseVal');
         var meterFill = document.getElementById('meterFill');
         var verdictEl = document.getElementById('verdict');
+        var personBtn = document.getElementById('personBtn');
         var fanBtn = document.getElementById('fanBtn');
         var pauseBtn = document.getElementById('pauseBtn');
         var resetBtn = document.getElementById('resetBtn');
@@ -225,6 +227,9 @@
         var vent = { x: 66, y: 42 };             // 換気扇（窓の近く・人の反対側）
         var fanOn = false;
         var running = true;
+        var personX = 666; // 人の位置（鼻はこの26px左）
+        var personPresent = true;
+        var dragging = false;
         var smell = 0; // 0..100
         var particles = [];
         var t = 0;
@@ -243,7 +248,7 @@
 
         function nosePos() {
           var h = noseHeights[parseInt(noseEl.value, 10)];
-          return { x: 640, y: h.y };
+          return { x: personX - 26, y: h.y };
         }
 
         function syncLabels() {
@@ -262,6 +267,37 @@
           fanBtn.setAttribute('aria-pressed', String(fanOn));
           fanBtn.textContent = fanOn ? '換気扇を止める' : '換気扇をつける';
         });
+        personBtn.addEventListener('click', function () {
+          personPresent = !personPresent;
+          personBtn.setAttribute('aria-pressed', String(personPresent));
+          personBtn.textContent = personPresent ? '人を消す' : '人を出す';
+          if (!personPresent) dragging = false;
+          if (!running) draw();
+        });
+        function canvasPos(e) {
+          var rect = canvas.getBoundingClientRect();
+          return {
+            x: (e.clientX - rect.left) * (W / rect.width),
+            y: (e.clientY - rect.top) * (H / rect.height)
+          };
+        }
+        canvas.addEventListener('pointerdown', function (e) {
+          if (!personPresent) return;
+          var pos = canvasPos(e);
+          if (Math.abs(pos.x - personX) < 60 && pos.y > 110) {
+            dragging = true;
+            canvas.setPointerCapture(e.pointerId);
+          }
+        });
+        canvas.addEventListener('pointermove', function (e) {
+          if (!dragging) return;
+          var pos = canvasPos(e);
+          personX = Math.max(150, Math.min(W - 40, pos.x));
+          if (!running) draw();
+        });
+        ['pointerup', 'pointercancel'].forEach(function (type) {
+          canvas.addEventListener(type, function () { dragging = false; });
+        });
         pauseBtn.addEventListener('click', function () {
           running = !running;
           pauseBtn.textContent = running ? '一時停止' : '再開';
@@ -273,9 +309,8 @@
         });
 
         function spawn() {
-          var temp = parseInt(tempEl.value, 10);
           var n = parseInt(strengthEl.value, 10);
-          var count = temp > 0 ? n : Math.max(1, n - 1);
+          var count = n;
           for (var i = 0; i < count; i++) {
             if (particles.length > 420) return;
             particles.push({
@@ -284,7 +319,6 @@
               vx: 0, vy: 0,
               r: 2.4 + Math.random() * 2.6,
               life: 0,
-              heat: 1,
               seed: Math.random() * Math.PI * 2
             });
           }
@@ -296,33 +330,40 @@
           var temp = parseInt(tempEl.value, 10);
           var wind = parseInt(windEl.value, 10);
           var nose = nosePos();
-          var rise = temp * 0.11; // 上昇気流の強さ
           var hits = 0;
+          // 体温プルームの強さ：体温と室温の差で決まる。人がおらんとプルームもない
+          var tf = personPresent ? Math.min(1.5, temp / 12) : 0;
 
           for (var i = particles.length - 1; i >= 0; i--) {
             var p = particles[i];
             p.life += 1;
-            p.heat = Math.max(0, p.heat - 0.0012); // だんだん冷める
 
-            // 浮力：温かい間だけ昇る。冷めたらゆっくり沈む（対流の循環）
-            var buoy = rise * p.heat * (0.55 + 0.45 * Math.sin(p.seed + p.life * 0.05));
-            var targetVy = p.heat > 0.22 ? -buoy : 0.34;
-            // 部屋全体の対流セル：天井を伝って横へ流れ、壁際で降りてくる
-            if (temp > 0) {
-              var tf = Math.min(1.4, temp / 12);
-              if (p.y < 110) p.vx += (p.x >= source.x ? 1 : -1) * 0.045 * tf;
-              if (p.x > W * 0.58 && p.y >= 50 && p.heat < 0.75) targetVy = Math.max(targetVy, 0.5 * tf);
-              if (p.x < W * 0.14 && p.y >= 50 && p.heat < 0.75) targetVy = Math.max(targetVy, 0.4 * tf);
+            // 基本はゆっくり沈みながら漂う
+            var targetVy = 0.34;
+            if (tf > 0) {
+              var dxp = p.x - personX;
+              var adx = Math.abs(dxp);
+              // プルームの柱：体に近いほど速く、上へ行くほど広がる
+              var hw = 36 + Math.max(0, floorY - p.y) * 0.09;
+              if (adx < hw && p.y < floorY) {
+                var core = 1 - (adx / hw) * 0.55;
+                targetVy = Math.min(targetVy, -1.7 * tf * core * (0.7 + 0.3 * Math.sin(p.seed + p.life * 0.05)));
+              } else if (p.y > floorY - 210) {
+                // 巻き込み：足元の空気がプルームへ吸い寄せられる
+                p.vx += (dxp > 0 ? -1 : 1) * 0.03 * tf * Math.max(0.25, 1 - adx / 900);
+              }
+              // 天井まで行ったら人から離れる向きへ広がる
+              if (p.y < 110) p.vx += (p.x >= personX ? 1 : -1) * 0.045 * tf;
             }
             p.vy += (targetVy - p.vy) * 0.05;
-            // ゆらぎ（乱流っぽい横揺れ）：高く昇るほどプルームは広がる
+            // ゆらぎ（乱流っぽい横揺れ）：高く昇るほど広がる
             var spread = 1 + Math.max(0, source.y - p.y) / 160;
             p.vx += Math.sin(p.life * 0.07 + p.seed) * 0.05 * spread;
             // 横風（負の値＝窓から人へ＝右向き、正の値＝人から窓へ＝左向き）
             p.vx += (-wind * 0.55 - p.vx) * 0.012;
             // 天井にぶつかったら横へ広がる（天井ジェット）
             if (p.y < 34) {
-              var dir = p.x >= source.x ? 1 : -1;
+              var dir = p.x >= personX ? 1 : -1;
               p.vx += dir * 0.09;
               p.vy += (0 - p.vy) * 0.2;
             }
@@ -343,7 +384,7 @@
             // 鼻の吸い込み：近くまで来た粒は呼吸で引き寄せられる
             var sdx = nose.x - p.x, sdy = nose.y - p.y;
             var sd = Math.sqrt(sdx * sdx + sdy * sdy) || 1;
-            if (!fanOn && sd < 120) {
+            if (personPresent && !fanOn && sd < 120) {
               var suck = (1 - sd / 120) * 0.14;
               p.vx += (sdx / sd) * suck;
               p.vy += (sdy / sd) * suck;
@@ -356,12 +397,12 @@
             if (p.y < 14) { p.y = 14; p.vy = Math.abs(p.vy) * 0.2; }
             if (p.x < 10) { p.x = 10; p.vx = 0; }
             if (p.x > W - 10) { p.x = W - 10; p.vx = 0; }
-            // 床まで沈んだら消える
-            if (p.y > floorY - 2) { particles.splice(i, 1); continue; }
+            // 床では消えず、足元に漂う（寿命で消える）
+            if (p.y > floorY - 4) { p.y = floorY - 4; p.vy = Math.min(p.vy, 0); }
 
             // 鼻に届いた？
             var dxn = nose.x - p.x, dyn = nose.y - p.y;
-            if (dxn * dxn + dyn * dyn < 36 * 36) {
+            if (personPresent && dxn * dxn + dyn * dyn < 36 * 36) {
               hits += 1;
               particles.splice(i, 1);
               continue;
@@ -373,12 +414,17 @@
           smell = Math.min(100, smell + hits * 12);
           smell = Math.max(0, smell - 0.16);
           meterFill.style.width = smell.toFixed(0) + '%';
-          verdictEl.textContent =
-            smell < 12 ? 'まだ平和' :
-            smell < 38 ? '…ん？ なんか臭う' :
-            smell < 68 ? 'くさっ！' :
-            smell < 90 ? 'うっ、直撃や…' : '悶絶レベル';
-          verdictEl.style.color = smell < 38 ? 'var(--good)' : 'var(--bad)';
+          if (!personPresent) {
+            verdictEl.textContent = '人がおらん（無事）';
+            verdictEl.style.color = 'var(--good)';
+          } else {
+            verdictEl.textContent =
+              smell < 12 ? 'まだ平和' :
+              smell < 38 ? '…ん？ なんか臭う' :
+              smell < 68 ? 'くさっ！' :
+              smell < 90 ? 'うっ、直撃や…' : '悶絶レベル';
+            verdictEl.style.color = smell < 38 ? 'var(--good)' : 'var(--bad)';
+          }
         }
 
         function draw() {
@@ -447,18 +493,19 @@
           ctx.font = '12px sans-serif';
           ctx.fillText('換気扇', vent.x + 38, vent.y + 5);
 
-          // 上昇気流の湯気ライン（温かいときだけ）
+          // 体温プルームの湯気ライン（人がいて、差があるときだけ）
           var temp = parseInt(tempEl.value, 10);
-          if (temp > 0) {
-            ctx.strokeStyle = dark ? 'rgba(224,127,62,0.5)' : 'rgba(194,87,27,0.4)';
+          if (personPresent && temp > 0) {
+            ctx.strokeStyle = dark ? 'rgba(224,127,62,0.45)' : 'rgba(194,87,27,0.35)';
             ctx.lineWidth = 2;
             for (var s = 0; s < 3; s++) {
               ctx.beginPath();
-              var bx = source.x - 18 + s * 18;
+              var bx = personX - 24 + s * 24;
               var amp = 4 + temp * 0.25;
-              for (var yy = 0; yy <= 120; yy += 8) {
-                var xx = bx + Math.sin(yy * 0.05 + t * 0.09 + s * 2) * amp;
-                var py = source.y - 16 - yy;
+              for (var yy = 0; yy <= 330; yy += 8) {
+                var xx = bx + Math.sin(yy * 0.045 + t * 0.09 + s * 2) * amp;
+                var py = floorY - 8 - yy;
+                if (py < 56) break;
                 if (yy === 0) ctx.moveTo(xx, py); else ctx.lineTo(xx, py);
               }
               ctx.stroke();
@@ -503,7 +550,7 @@
 
           // 人（右側）
           var nose = nosePos();
-          var personX = nose.x + 26;
+          if (personPresent) {
           var headR = 26;
           var headY = nose.y + 14;
           ctx.strokeStyle = dark ? '#e8dcc4' : '#4a3a28';
@@ -584,6 +631,7 @@
           ctx.fillStyle = dark ? '#8fa3b8' : '#5b7d99';
           ctx.font = '12px sans-serif';
           ctx.fillText('鼻', nose.x - 6, nose.y - 14);
+          }
 
           // 臭い粒子
           for (var i = 0; i < particles.length; i++) {

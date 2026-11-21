@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>単音で音楽に聞こえる理由 — 聴覚実験室</title>
+<style>
+  :root { color-scheme: dark; }
+  * { box-sizing: border-box; }
+  body { margin:0; font-family: -apple-system, "Hiragino Sans", sans-serif; background:#14161a; color:#e8e9eb; line-height:1.6; }
+  main { max-width: 760px; margin: 0 auto; padding: 20px 16px 60px; }
+  h1 { font-size: 22px; margin: 8px 0 4px; }
+  .sub { color:#9aa0a8; font-size: 14px; margin-bottom: 24px; }
+  section { background:#1d2026; border:1px solid #2c3038; border-radius:12px; padding:18px; margin-bottom:20px; }
+  h2 { font-size:17px; margin:0 0 6px; }
+  .desc { font-size:14px; color:#c6c9cf; margin:0 0 14px; }
+  .row { display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin:10px 0; }
+  button { background:#2a2e37; color:#e8e9eb; border:1px solid #3a3f4b; border-radius:8px; padding:9px 14px; font-size:14px; cursor:pointer; }
+  button.on { background:#3d5a99; border-color:#5b83d6; color:#fff; }
+  button.play { background:#3d5a99; border-color:#5b83d6; color:#fff; min-width:88px; }
+  label { font-size:13px; color:#9aa0a8; }
+  input[type=range] { flex:1; min-width:140px; accent-color:#5b83d6; }
+  .val { font-size:13px; color:#e8e9eb; min-width:74px; }
+  .note { font-size:13px; color:#9aa0a8; margin-top:10px; }
+  canvas { width:100%; height:190px; background:#101216; border-radius:8px; display:block; }
+  .legend { font-size:12px; color:#9aa0a8; margin-top:6px; }
+  .dot { display:inline-block; width:10px; height:10px; border-radius:2px; margin:0 4px 0 10px; vertical-align:middle; }
+</style>
+</head>
+<body>
+<main>
+  <h1>単音で音楽に聞こえる理由 — 聴覚実験室</h1>
+  <p class="sub">説明ではなく耳で確かめるための3つの実験。音が出るので音量に注意。</p>
+
+  <section>
+    <h2>実験1：声部が分かれる（聴覚ストリーミング）</h2>
+    <p class="desc">高い音と低い音を交互に鳴らすだけのパターン。ゆっくり・音程が近いと「1つのメロディ」に聞こえる。速く・音程を広げると、ある時点で「高い音の流れ」と「低い音の流れ」の2本に分かれて聞こえる。バッハの単旋律が複数の声部に聞こえる正体がこれ。</p>
+    <div class="row">
+      <button class="play" id="s1play">再生</button>
+      <button id="s1presetA">1つに聞こえる設定</button>
+      <button id="s1presetB">2つに分かれる設定</button>
+    </div>
+    <div class="row"><label>速さ</label><input type="range" id="s1rate" min="2" max="16" step="0.5" value="4"><span class="val" id="s1rateVal"></span></div>
+    <div class="row"><label>音程差</label><input type="range" id="s1gap" min="1" max="24" step="1" value="7"><span class="val" id="s1gapVal"></span></div>
+    <p class="note">試し方：まず速さ4・音程差4で「タッタッタッ」という1本の流れを確認。そこから音程差を15、速さを10まで上げていくと、途中で2本に割れる。</p>
+  </section>
+
+  <section>
+    <h2>実験2：分散和音の時間積分</h2>
+    <p class="desc">Gメジャーの和音（ソ・シ・レ・ソ）を鳴らす。同時に鳴らせば和音。1音ずつずらすと、間隔が短いうちは「和音が揺れている」ように聞こえるが、間隔を広げるとただのメロディ（音の並び）に変わる。耳が音を積分して和音として復元できる時間の窓には限界がある。</p>
+    <div class="row">
+      <button id="s2sim">同時に鳴らす</button>
+      <button id="s2arp">ずらして鳴らす</button>
+    </div>
+    <div class="row"><label>ずらす間隔</label><input type="range" id="s2gap" min="20" max="700" step="10" value="90"><span class="val" id="s2gapVal"></span></div>
+    <p class="note">試し方：間隔90msではまだ和音っぽさが残る。300ms、600msと広げると和音感が崩れて「4つの音の列」になる。その境目が耳の積分窓。</p>
+  </section>
+
+  <section>
+    <h2>実験3：バッハ分解（BWV 1007 プレリュード冒頭8小節・実データ）</h2>
+    <p class="desc">実際の楽譜データ（Mutopia、Schirmer 1916年版）を分解して鳴らす。「低い音だけ」「高い音だけ」を聞くと、それぞれが独立した流れになっているのが分かる。2音色モードでは、低い流れを矩形波、高い流れを三角波で同時に鳴らす。元は1本の線なのに、耳の中では合奏に復元される。</p>
+    <canvas id="roll" width="700" height="190"></canvas>
+    <div class="legend"><span class="dot" style="background:#6cb2f5"></span>低い音（55未満）<span class="dot" style="background:#f5a66c"></span>高い音（55以上）</div>
+    <div class="row">
+      <button class="play" id="s3play">再生</button>
+      <button data-mode="all" class="s3mode on">全体</button>
+      <button data-mode="beat" class="s3mode">拍頭の音だけ</button>
+      <button data-mode="low" class="s3mode">低い音だけ</button>
+      <button data-mode="high" class="s3mode">高い音だけ</button>
+      <button data-mode="two" class="s3mode">2音色で同時</button>
+    </div>
+    <div class="row"><label>テンポ</label><input type="range" id="s3tempo" min="60" max="140" step="2" value="96"><span class="val" id="s3tempoVal"></span></div>
+    <p class="note">「拍頭の音だけ」は各拍の最初の音だけを残したもの。それでもコードの移り変わり（G→C→…）が追えるのは、拍頭に根音や和音の骨格が置かれているから。</p>
+  </section>
+</main>
+<script>
+const NOTES = [[0.0, 43], [0.25, 50], [0.5, 59], [0.75, 57], [1.0, 59], [1.25, 50], [1.5, 59], [1.75, 50], [2.0, 43], [2.25, 50], [2.5, 59], [2.75, 57], [3.0, 59], [3.25, 50], [3.5, 59], [3.75, 50], [4.0, 43], [4.25, 52], [4.5, 60], [4.75, 59], [5.0, 60], [5.25, 52], [5.5, 60], [5.75, 52], [6.0, 43], [6.25, 52], [6.5, 60], [6.75, 59], [7.0, 60], [7.25, 52], [7.5, 60], [7.75, 52], [8.0, 43], [8.25, 54], [8.5, 60], [8.75, 59], [9.0, 60], [9.25, 54], [9.5, 60], [9.75, 54], [10.0, 43], [10.25, 54], [10.5, 60], [10.75, 59], [11.0, 60], [11.25, 54], [11.5, 60], [11.75, 54], [12.0, 43], [12.25, 55], [12.5, 59], [12.75, 57], [13.0, 59], [13.25, 55], [13.5, 59], [13.75, 55], [14.0, 43], [14.25, 55], [14.5, 59], [14.75, 57], [15.0, 59], [15.25, 55], [15.5, 59], [15.75, 54], [16.0, 43], [16.25, 52], [16.5, 59], [16.75, 57], [17.0, 59], [17.25, 55], [17.5, 54], [17.75, 55], [18.0, 52], [18.25, 55], [18.5, 54], [18.75, 55], [19.0, 47], [19.25, 50], [19.5, 49], [19.75, 47], [20.0, 49], [20.25, 55], [20.5, 57], [20.75, 55], [21.0, 57], [21.25, 55], [21.5, 57], [21.75, 55], [22.0, 49], [22.25, 55], [22.5, 57], [22.75, 55], [23.0, 57], [23.25, 55], [23.5, 57], [23.75, 55], [24.0, 54], [24.25, 57], [24.5, 62], [24.75, 61], [25.0, 62], [25.25, 57], [25.5, 55], [25.75, 57], [26.0, 54], [26.25, 57], [26.5, 55], [26.75, 57], [27.0, 50], [27.25, 54], [27.5, 52], [27.75, 50], [28.0, 40], [28.25, 47], [28.5, 55], [28.75, 54], [29.0, 55], [29.25, 47], [29.5, 55], [29.75, 47], [30.0, 40], [30.25, 47], [30.5, 55], [30.75, 54], [31.0, 55], [31.25, 47], [31.5, 55], [31.75, 47]];
+let AC = null, master = null;
+function ac() {
+  if (!AC) {
+    AC = new (window.AudioContext || window.webkitAudioContext)();
+    master = AC.createGain(); master.gain.value = 0.5; master.connect(AC.destination);
+  }
+  if (AC.state === 'suspended') AC.resume();
+  return AC;
+}
+function tone(t, midi, dur, type, vol) {
+  const ctx = ac();
+  const f = 440 * Math.pow(2, (midi - 69) / 12);
+  const o = ctx.createOscillator(); o.type = type || 'triangle'; o.frequency.value = f;
+  const g = ctx.createGain();
+  g.gain.setValueAtTime(0, t);
+  g.gain.linearRampToValueAtTime(vol || 0.5, t + 0.005);
+  g.gain.exponentialRampToValueAtTime(0.001, t + Math.max(dur, 0.05));
+  let node = o;
+  if (type === 'square') {
+    const fl = ctx.createBiquadFilter(); fl.type = 'lowpass'; fl.frequency.value = 1400;
+    o.connect(fl); node = fl;
+  }
+  node.connect(g); g.connect(master);
+  o.start(t); o.stop(t + Math.max(dur, 0.05) + 0.05);
+}
+const stopFns = [];
+function stopAll() { while (stopFns.length) { try { stopFns.pop()(); } catch(e) {} } }
+
+/* ---- 実験1 ---- */
+const s1 = { playing:false, timer:null, nextTime:0, idx:0 };
+function s1Vals() {
+  const rate = parseFloat(document.getElementById('s1rate').value);
+  const gap = parseInt(document.getElementById('s1gap').value);
+  document.getElementById('s1rateVal').textContent = rate.toFixed(1) + ' 音/秒';
+  document.getElementById('s1gapVal').textContent = gap + ' 半音';
+  return { rate, gap };
+}
+function s1Stop() {
+  s1.playing = false;
+  if (s1.timer) { clearInterval(s1.timer); s1.timer = null; }
+  document.getElementById('s1play').textContent = '再生';
+}
+function s1Play() {
+  stopAll(); ac();
+  s1.playing = true; s1.idx = 0; s1.nextTime = AC.currentTime + 0.06;
+  document.getElementById('s1play').textContent = '停止';
+  const LOW = 69;
+  s1.timer = setInterval(() => {
+    const { rate, gap } = s1Vals();
+    const step = 1 / rate;
+    while (s1.nextTime < AC.currentTime + 0.15) {
+      const midi = (s1.idx % 2 === 0) ? LOW : LOW + gap;
+      tone(s1.nextTime, midi, Math.min(0.12, step * 0.9), 'triangle', 0.45);
+      s1.nextTime += step; s1.idx++;
+    }
+  }, 30);
+  stopFns.push(s1Stop);
+}
+document.getElementById('s1play').onclick = () => { s1.playing ? s1Stop() : s1Play(); };
+document.getElementById('s1rate').oninput = s1Vals;
+document.getElementById('s1gap').oninput = s1Vals;
+document.getElementById('s1presetA').onclick = () => {
+  document.getElementById('s1rate').value = 3; document.getElementById('s1gap').value = 4; s1Vals();
+};
+document.getElementById('s1presetB').onclick = () => {
+  document.getElementById('s1rate').value = 10; document.getElementById('s1gap').value = 15; s1Vals();
+};
+s1Vals();
+
+/* ---- 実験2 ---- */
+const CHORD = [55, 59, 62, 67];
+function s2GapVal() {
+  const v = parseInt(document.getElementById('s2gap').value);
+  document.getElementById('s2gapVal').textContent = v + ' ms';
+  return v;
+}
+document.getElementById('s2gap').oninput = s2GapVal; s2GapVal();
+document.getElementById('s2sim').onclick = () => {
+  stopAll(); const t = ac().currentTime + 0.05;
+  CHORD.forEach(m => tone(t, m, 1.4, 'triangle', 0.3));
+};
+document.getElementById('s2arp').onclick = () => {
+  stopAll(); const t = ac().currentTime + 0.05;
+  const gap = s2GapVal() / 1000;
+  CHORD.forEach((m, i) => tone(t + i * gap, m, 1.2, 'triangle', 0.38));
+};
+
+/* ---- 実験3 ---- */
+const s3 = { playing:false, timer:null, loopStart:0, mode:'all', raf:0 };
+const cv = document.getElementById('roll'), cx = cv.getContext('2d');
+const PITCH_MIN = 40, PITCH_MAX = 66, BEATS = 32;
+function drawRoll(playBeat) {
+  const W = cv.width, H = cv.height;
+  cx.clearRect(0, 0, W, H);
+  cx.strokeStyle = '#23262e'; cx.lineWidth = 1;
+  for (let b = 0; b <= BEATS; b += 4) {
+    const x = b / BEATS * W;
+    cx.beginPath(); cx.moveTo(x, 0); cx.lineTo(x, H); cx.stroke();
+  }
+  for (const [t, p] of NOTES) {
+    const x = t / BEATS * W, w = Math.max(3, 0.25 / BEATS * W - 1);
+    const y = H - (p - PITCH_MIN + 1) / (PITCH_MAX - PITCH_MIN + 1) * H;
+    const h = H / (PITCH_MAX - PITCH_MIN + 1) - 1;
+    const low = p < 55;
+    let show = true;
+    if (s3.mode === 'low' && !low) show = false;
+    if (s3.mode === 'high' && low) show = false;
+    if (s3.mode === 'beat' && Math.round(t * 4) % 4 !== 0) show = false;
+    cx.fillStyle = low ? '#6cb2f5' : '#f5a66c';
+    cx.globalAlpha = show ? 1 : 0.13;
+    cx.fillRect(x, y, w, h);
+  }
+  cx.globalAlpha = 1;
+  if (playBeat !== null && playBeat !== undefined) {
+    const x = (playBeat % BEATS) / BEATS * W;
+    cx.strokeStyle = '#ffffff'; cx.lineWidth = 1.5;
+    cx.beginPath(); cx.moveTo(x, 0); cx.lineTo(x, H); cx.stroke();
+  }
+}
+function s3Tempo() {
+  const v = parseInt(document.getElementById('s3tempo').value);
+  document.getElementById('s3tempoVal').textContent = '♩=' + v;
+  return v;
+}
+document.getElementById('s3tempo').oninput = s3Tempo; s3Tempo();
+function s3NoteOK(t, p) {
+  if (s3.mode === 'low') return p < 55;
+  if (s3.mode === 'high') return p >= 55;
+  if (s3.mode === 'beat') return Math.round(t * 4) % 4 === 0;
+  return true;
+}
+function s3ScheduleLoop(startAt) {
+  const spb = 60 / s3Tempo();
+  for (const [t, p] of NOTES) {
+    if (!s3NoteOK(t, p)) continue;
+    const when = startAt + t * spb;
+    if (s3.mode === 'two') {
+      if (p < 55) tone(when, p, spb * 0.28 * 4 * 0.9, 'square', 0.30);
+      else tone(when, p, spb * 0.28 * 4 * 0.9, 'triangle', 0.42);
+    } else {
+      tone(when, p, spb * 1.1, 'triangle', 0.45);
+    }
+  }
+  return startAt + BEATS * spb;
+}
+function s3Stop() {
+  s3.playing = false;
+  if (s3.timer) { clearInterval(s3.timer); s3.timer = null; }
+  cancelAnimationFrame(s3.raf);
+  document.getElementById('s3play').textContent = '再生';
+  drawRoll(null);
+}
+function s3Play() {
+  stopAll(); ac();
+  s3.playing = true;
+  document.getElementById('s3play').textContent = '停止';
+  let nextLoop = AC.currentTime + 0.06;
+  s3.loopStart = nextLoop;
+  nextLoop = s3ScheduleLoop(nextLoop);
+  s3.timer = setInterval(() => {
+    if (nextLoop < AC.currentTime + 2.0) { s3.loopStart = nextLoop; nextLoop = s3ScheduleLoop(nextLoop); }
+  }, 400);
+  const tick = () => {
+    if (!s3.playing) return;
+    const spb = 60 / s3Tempo();
+    const beat = (AC.currentTime - s3.loopStart) / spb;
+    drawRoll(beat >= 0 ? beat : null);
+    s3.raf = requestAnimationFrame(tick);
+  };
+  tick();
+  stopFns.push(s3Stop);
+}
+document.getElementById('s3play').onclick = () => { s3.playing ? s3Stop() : s3Play(); };
+document.querySelectorAll('.s3mode').forEach(btn => {
+  btn.onclick = () => {
+    document.querySelectorAll('.s3mode').forEach(b => b.classList.remove('on'));
+    btn.classList.add('on');
+    s3.mode = btn.dataset.mode;
+    drawRoll(null);
+    if (s3.playing) { s3Stop(); s3Play(); }
+  };
+});
+drawRoll(null);
+</script>
+</body>
+</html>
